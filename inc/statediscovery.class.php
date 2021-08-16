@@ -161,8 +161,7 @@ class PluginFusioninventoryStateDiscovery extends CommonDBTM {
       $number = $DB->numrows($resultcount);
 
       // Display the pager
-      Html::printPager($start, $number, $CFG_GLPI['root_doc'].
-              "/plugins/fusioninventory/front/statediscovery.php", '');
+      Html::printPager($start, $number, Plugin::getWebDir('fusioninventory')."/front/statediscovery.php", '');
 
       echo "<table class='tab_cadre_fixe'>";
 
@@ -191,7 +190,7 @@ class PluginFusioninventoryStateDiscovery extends CommonDBTM {
          LIMIT ".intval($start).", " . intval($_SESSION['glpilist_limit']);
 
       $result=$DB->query($sql);
-      while ($data=$DB->fetch_array($result)) {
+      while ($data=$DB->fetchArray($result)) {
          echo "<tr class='tab_bg_1'>";
          echo "<td>".$data['uniqid']."</td>";
          $pfTaskjob->getFromDB($data['plugin_fusioninventory_taskjobs_id']);
@@ -291,7 +290,4 @@ class PluginFusioninventoryStateDiscovery extends CommonDBTM {
       }
       echo "</table>";
    }
-
-
 }
-

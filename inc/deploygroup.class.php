@@ -183,7 +183,7 @@ class PluginFusioninventoryDeployGroup extends CommonDBTM {
             ORDER BY glpi_plugin_fusioninventory_tasks.name";
          $res = $DB->query($query);
 
-         while ($row = $DB->fetch_assoc($res)) {
+         while ($row = $DB->fetchAssoc($res)) {
             echo "<tr class='tab_bg_1'>";
             echo "<td>";
             echo "<a href='".$link."?id=".$row['id']."'>".$row['tname']."</a>";
@@ -227,7 +227,7 @@ class PluginFusioninventoryDeployGroup extends CommonDBTM {
       switch ($ma->getAction()) {
          case 'add_to_static_group':
             Dropdown::show('PluginFusioninventoryDeployGroup',
-                            ['condition' => "`type`='".PluginFusioninventoryDeployGroup::STATIC_GROUP."'"]);
+                            ['condition' => ['type' => PluginFusioninventoryDeployGroup::STATIC_GROUP]]);
             echo Html::submit(_x('button', 'Post'), ['name' => 'massiveaction']);
             return true;
          case 'duplicate':
@@ -394,6 +394,7 @@ class PluginFusioninventoryDeployGroup extends CommonDBTM {
          'name'          => __('Name'),
          'datatype'      => 'itemlink',
          'massiveaction' => false,
+         'autocomplete'  => true,
       ];
 
       $tab[] = [
@@ -459,8 +460,13 @@ class PluginFusioninventoryDeployGroup extends CommonDBTM {
     */
    static function dropdownGroupType($name = 'type', $value = 'STATIC') {
       $group = new self();
-      return Dropdown::showFromArray($name, $group->grouptypes,
-                                     ['value'=>$value, 'display'=>false]);
+      if ($name == 'type') {
+         return Dropdown::showFromArray($name, $group->grouptypes,
+                                       ['value'=>$value, 'display'=>true]);
+      } else {
+         return Dropdown::showFromArray($name, $group->grouptypes,
+                                        ['value'=>$value, 'display'=>false]);
+      }
    }
 
 

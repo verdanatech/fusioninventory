@@ -164,11 +164,6 @@ class PluginFusioninventoryDeployMirror extends CommonDBTM {
 
          //Second, check by entity
          if (in_array($mirror_match, [self::MATCH_ENTITY, self::MATCH_BOTH])) {
-
-            //Only process a mirror with a location is matching is BOTH
-            if ($result['locations_id'] && $mirror_match == self::MATCH_ENTITY) {
-               continue;
-            }
             $entities = $result['entities_id'];
 
             //If the mirror is visible in child entities then get all child entities
@@ -178,16 +173,12 @@ class PluginFusioninventoryDeployMirror extends CommonDBTM {
             }
 
             $add_mirror = false;
-            if (is_array($entities)) {
-               if (in_array($computer->fields['entities_id'], $entities)) {
-                  $add_mirror = true;
-               }
-            } else {
-               if ($computer->fields['entities_id'] == $result['entities_id']) {
-                  $add_mirror = true;
-               }
+            if (is_array($entities)
+               && in_array($computer->fields['entities_id'], $entities)) {
+               $add_mirror = true;
+            } else if ($computer->fields['entities_id'] == $result['entities_id']) {
+               $add_mirror = true;
             }
-
             if (!in_array($result['url'], $mirrors) && $add_mirror) {
                $mirrors[] = $result['url'];
             }
@@ -258,7 +249,7 @@ class PluginFusioninventoryDeployMirror extends CommonDBTM {
                     'id'           => $id
                    ];
          Ajax::updateItemOnEvent('is_recursive', "displaydropdownlocation",
-                 $CFG_GLPI["root_doc"]."/plugins/fusioninventory/ajax/dropdownlocation.php", $params);
+                 Plugin::getWebDir('fusioninventory')."/ajax/dropdownlocation.php", $params);
 
          echo "<div id='displaydropdownlocation'>";
          // Location option
@@ -301,6 +292,7 @@ class PluginFusioninventoryDeployMirror extends CommonDBTM {
          'name'          => __('Name'),
          'datatype'      => 'itemlink',
          'itemlink_type' => $this->getType(),
+         'autocomplete'  => true,
       ];
 
       $tab[] = [
@@ -312,11 +304,12 @@ class PluginFusioninventoryDeployMirror extends CommonDBTM {
       ];
 
       $tab[] = [
-         'id'        => '2',
-         'table'     => $this->getTable(),
-         'field'     => 'url',
-         'name'      => __('Mirror server address', 'fusioninventory'),
-         'datatype'  => 'string',
+         'id'           => '2',
+         'table'        => $this->getTable(),
+         'field'        => 'url',
+         'name'         => __('Mirror server address', 'fusioninventory'),
+         'datatype'     => 'string',
+         'autocomplete' => true,
       ];
 
       $tab[] = [
@@ -339,7 +332,7 @@ class PluginFusioninventoryDeployMirror extends CommonDBTM {
          'id'       => '80',
          'table'    => 'glpi_entities',
          'field'    => 'completename',
-         'name'     => __('Entity'),
+         'name'     => Entity::getTypeName(1),
          'datatype' => 'dropdown',
       ];
 
@@ -423,7 +416,4 @@ class PluginFusioninventoryDeployMirror extends CommonDBTM {
 
       }
    }
-
-
 }
-

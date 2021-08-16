@@ -74,7 +74,7 @@ class PluginFusioninventoryFormatconvert {
     * Convert XML into php array
     *
     * @global string $PLUGIN_FUSIONINVENTORY_XML
-    * @param string $xml
+    * @param object $xml
     * @return array
     */
    static function XMLtoArray($xml) {
@@ -222,8 +222,7 @@ class PluginFusioninventoryFormatconvert {
     */
    static function cleanArray($data) {
       foreach ($data as $key=>$value) {
-         //if (is_array($value)) {
-         if ((array)$value === $value) {
+         if (is_array($value)) {
             if (count($value) == 0) {
                $value = '';
             } else {
@@ -1597,11 +1596,11 @@ class PluginFusioninventoryFormatconvert {
          //Store the raw values in the array
          $array_tmp = $this->addValues($a_softwares,
                                         [
-                                           'PUBLISHER'   => 'manufacturers_id',
-                                           'NAME'        => 'name',
-                                           'VERSION'     => 'version',
-                                        'COMMENTS'        => 'comment',
-                                           'INSTALLDATE' => 'date_install',
+                                           'PUBLISHER'       => 'manufacturers_id',
+                                           'NAME'            => 'name',
+                                           'VERSION'         => 'version',
+                                           'COMMENTS'        => 'comment',
+                                           'INSTALLDATE'     => 'date_install',
                                            'SYSTEM_CATEGORY' => '_system_category']);
          if (!isset($array_tmp['name'])
                  || $array_tmp['name'] == '') {
@@ -1701,10 +1700,10 @@ class PluginFusioninventoryFormatconvert {
                      $array_tmp['version'] = "";
                   }
                   //This is a realy computer, not a template
-                  $array_tmp['is_template_computer'] = 0;
+                  $array_tmp['is_template_item'] = 0;
 
                   //The computer is not deleted
-                  $array_tmp['is_deleted_computer']  = 0;
+                  $array_tmp['is_deleted_item']  = 0;
 
                   //Store if the software is recursive or not
                   $array_tmp['is_recursive']         = $is_software_recursive;
@@ -1779,7 +1778,7 @@ class PluginFusioninventoryFormatconvert {
       // Get data from rules / collect registry, wmi, find files
       $data_collect = [];
 
-      $data_registries = getAllDatasFromTable('glpi_plugin_fusioninventory_collects_registries_contents',
+      $data_registries = getAllDataFromTable('glpi_plugin_fusioninventory_collects_registries_contents',
          ['computers_id' => $computers_id]);
 
       foreach ($data_registries as $data) {
@@ -1794,7 +1793,7 @@ class PluginFusioninventoryFormatconvert {
          }
       }
 
-      $data_wmis = getAllDatasFromTable('glpi_plugin_fusioninventory_collects_wmis_contents',
+      $data_wmis = getAllDataFromTable('glpi_plugin_fusioninventory_collects_wmis_contents',
          ['computers_id' => $computers_id]);
 
       foreach ($data_wmis as $data) {
@@ -1809,7 +1808,7 @@ class PluginFusioninventoryFormatconvert {
          }
       }
 
-      $data_files = getAllDatasFromTable('glpi_plugin_fusioninventory_collects_files_contents',
+      $data_files = getAllDataFromTable('glpi_plugin_fusioninventory_collects_files_contents',
          ['computers_id' => $computers_id]);
 
       foreach ($data_files as $data) {
@@ -1885,8 +1884,7 @@ class PluginFusioninventoryFormatconvert {
     */
    static function addValues($array, $a_key) {
       $a_return = [];
-      //if (!is_array($array)) {
-      if ((array)$array !== $array) {
+      if (!is_array($array)) {
          return $a_return;
       }
       foreach ($array as $key=>$value) {
@@ -1949,8 +1947,7 @@ class PluginFusioninventoryFormatconvert {
             // do nothing
             $coding_std = true;
          } else {
-            //if (is_array($value)) {
-            if ((array)$value === $value) {
+            if (is_array($value)) {
                $new_itemtype = $itemtype;
                if ($level == 0) {
                   $new_itemtype = $key;

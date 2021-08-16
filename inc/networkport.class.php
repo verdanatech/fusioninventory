@@ -283,7 +283,7 @@ class PluginFusioninventoryNetworkPort extends CommonDBTM {
                 FROM `glpi_networkports`
                 WHERE `id`='".$id."';";
       if (($result = $DB->query($query))) {
-         $data = $DB->fetch_array($result);
+         $data = $DB->fetchArray($result);
          $array["items_id"] = $data["items_id"];
          $array["itemtype"] = $data["itemtype"];
       }
@@ -293,7 +293,7 @@ class PluginFusioninventoryNetworkPort extends CommonDBTM {
                    WHERE `id`='".$array["itemtype"]."'
                    LIMIT 0, 1;";
          if (($result = $DB->query($query))) {
-            $data = $DB->fetch_array($result);
+            $data = $DB->fetchArray($result);
             $array["name"] = $data["name"];
          }
       }
@@ -358,7 +358,4 @@ class PluginFusioninventoryNetworkPort extends CommonDBTM {
       }
       return $is_multiple;
    }
-
-
 }
-

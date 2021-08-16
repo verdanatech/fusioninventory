@@ -106,7 +106,7 @@ class PluginFusioninventoryTimeslot extends CommonDBTM {
          'id'       => '2',
          'table'    => 'glpi_entities',
          'field'    => 'completename',
-         'name'     => __('Entity'),
+         'name'     => Entity::getTypeName(1),
          'datatype' => 'dropdown',
       ];
 
@@ -186,7 +186,7 @@ class PluginFusioninventoryTimeslot extends CommonDBTM {
 
       $results = [];
 
-      $timeslot_entries = getAllDatasFromTable(
+      $timeslot_entries = getAllDataFromTable(
          "glpi_plugin_fusioninventory_timeslotentries",
          $condition,
          false, ''
@@ -291,7 +291,4 @@ class PluginFusioninventoryTimeslot extends CommonDBTM {
       }
       return true;
    }
-
-
 }
-

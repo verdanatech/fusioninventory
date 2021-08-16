@@ -190,7 +190,7 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
          ],
          'osname' => [
             'name'            => __('Asset', 'fusioninventory').' > '.
-                                 __('Operating system'),
+                                 OperatingSystem::getTypeName(1),
          ],
          'itemtype' => [
             'name'            => __('Asset', 'fusioninventory').' > '.
@@ -219,7 +219,7 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
          ],
          'oscomment' => [
             'name'            => __('Asset', 'fusioninventory').' > '.
-                                 __('Operating system').'/'.__('Comments'),
+                                 OperatingSystem::getTypeName(1).'/'.__('Comments'),
             'allow_condition' => [
                                     Rule::PATTERN_IS,
                                     Rule::PATTERN_IS_NOT,
@@ -428,7 +428,7 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
     * Get criteria by criteria name
     *
     * @param string $critname
-    * @return string
+    * @return array
     */
    function getCriteriaByID($critname) {
       $criteria = [];
@@ -527,14 +527,7 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
          foreach ($global_criteria as $criterion) {
             $criteria = $this->getCriteriaByID($criterion);
             foreach ($criteria as $crit) {
-               if ($crit->fields["condition"] !== Rule::PATTERN_EXISTS
-                     && $crit->fields["condition"] !== Rule::PATTERN_DOES_NOT_EXISTS
-                     && $crit->fields["condition"] !== PluginFusioninventoryInventoryRuleImport::PATTERN_ENTITY_RESTRICT
-                     && $crit->fields["condition"] !== PluginFusioninventoryInventoryRuleImport::PATTERN_NETWORK_PORT_RESTRICT
-                     && $crit->fields["condition"] !== PluginFusioninventoryInventoryRuleImport::PATTERN_ONLY_CRITERIA_RULE) {
-
-                     $complex_criterias_strings[] = $crit->fields["criteria"];
-               }
+               $complex_criterias_strings[] = $crit->fields["criteria"];
             }
          }
          foreach ($input as $key=>$crit) {
@@ -552,7 +545,7 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
       }
 
       // Build the request to check if the machine exists in GLPI
-      $where_entity = "";
+      $where_entity = "";//FIXME: not used
       if (isset($input['entities_id'])) {
          if (is_array($input['entities_id'])) {
             $where_entity .= implode(',', $input['entities_id']);
@@ -583,7 +576,14 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
       } else {
          foreach ($CFG_GLPI["state_types"] as $itemtype) {
             if (class_exists($itemtype)
-               && ($itemtype != 'SoftwareLicense' && $itemtype != 'Certificate')) {
+               && ($itemtype != 'SoftwareLicense'
+               && $itemtype != 'Certificate'
+               && $itemtype != 'Appliance'
+               && $itemtype != 'Line'
+               && $itemtype != 'Cluster'
+               && $itemtype != 'Contract'
+               && $itemtype != 'SoftwareVersion'
+               )) {
                $itemtypeselected[] = $itemtype;
             }
          }
@@ -789,9 +789,11 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
                break;
 
             case 'domains_id':
+               $sql_from_domain .= " LEFT JOIN `glpi_domains_items`
+                                 ON `glpi_domains_items`.`items_id` = `[typetable]`.`id` AND `glpi_domains_items`.`itemtype` = '{$input['itemtype']}'";
                $sql_from_domain .= " LEFT JOIN `glpi_domains`
                                  ON `glpi_domains`.`id` = ".
-                                     "`[typetable]`.`domains_id` ";
+                                     "`glpi_domains_items`.`domains_id` ";
                $sql_where_domain .= " AND `glpi_domains`.`name` = '".
                                     $input["domains_id"]."'";
                break;
@@ -822,6 +824,7 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
             $sql_from_temp .= $sql_from_domain;
             $sql_where_temp .= $sql_where_domain;
          } else if ($itemtype == 'PluginFusioninventoryUnmanaged') {
+            $itemtype = 'PluginFusioninventoryUnmanaged';
             $sql_from_temp .= $sql_from_domain;
             $sql_where_temp .= $sql_where_domain;
          }
@@ -840,7 +843,7 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
             }
          }
 
-         $item = new $itemtype();
+         $item = new $itemtype;
          $sql_glpi = "SELECT `[typetable]`.`id`";
          if ($select_networkport) {
             if ($linkCriteriaPort) {
@@ -873,7 +876,7 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
 
             if ($result_glpi) {
                if ($DB->numrows($result_glpi) > 0) {
-                  while ($data=$DB->fetch_array($result_glpi)) {
+                  while ($data=$DB->fetchArray($result_glpi)) {
                      $found = 1;
                      $this->criterias_results['found_equipment'][$itemtype][] = $data['id'];
                      $this->criterias_results['found_port'] = 0;
@@ -910,7 +913,11 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
       } else if (isset($_SESSION['plugin_fusioninventory_classrulepassed'])
             && !empty($_SESSION['plugin_fusioninventory_classrulepassed'])) {
          $classname = $_SESSION['plugin_fusioninventory_classrulepassed'];
-         $class = new $classname();
+         if ($classname == "PluginFusioninventoryCommunicationNetworkInventory") {
+            $class = new PluginFusioninventoryCommunicationNetworkInventory();
+         } else {
+            $class = new $classname();
+         }
       }
 
       $pfRulematchedlog = new PluginFusioninventoryRulematchedlog();
@@ -1295,5 +1302,4 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
       $this->criteriaInput = $input;
       return $input;
    }
-
 }

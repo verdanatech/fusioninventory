@@ -145,9 +145,9 @@ class PluginFusioninventoryProfile extends Profile {
    static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
       $pfProfile = new self();
       if ($item->fields['interface'] == 'central') {
-         $pfProfile->showForm($item->getID());
+         $pfProfile->showForm($item->fields['id']);
       } else {
-         $pfProfile->showFormSelf($item->getID());
+         $pfProfile->showFormSelf($item->fields['id']);
       }
       return true;
    }
@@ -157,11 +157,13 @@ class PluginFusioninventoryProfile extends Profile {
     * Display form
     *
     * @param integer $profiles_id
-    * @param boolean $openform
-    * @param boolean $closeform
-    * @return true
+    * @param array $options
+    * @return boolean
     */
-   function showForm($profiles_id = 0, $openform = true, $closeform = true) {
+   function showForm($profiles_id, $options = []) {
+
+      $openform = true;
+      $closeform = true;
 
       echo "<div class='firstbloc'>";
       if (($canedit = Session::haveRightsOr(self::$rightname, [CREATE, UPDATE, PURGE]))
@@ -451,7 +453,7 @@ class PluginFusioninventoryProfile extends Profile {
     * @param integer $profiles_id id of profile
     */
    static function createFirstAccess($profiles_id) {
-      include_once(GLPI_ROOT."/plugins/fusioninventory/inc/profile.class.php");
+      include_once(PLUGIN_FUSIONINVENTORY_DIR."/inc/profile.class.php");
       $profile = new self();
       foreach ($profile->getAllRights() as $right) {
          self::addDefaultProfileInfos($profiles_id,
@@ -492,7 +494,7 @@ class PluginFusioninventoryProfile extends Profile {
     */
    static function migrateProfiles() {
       //Get all rights from the old table
-      $profiles = getAllDatasFromTable(getTableForItemType(__CLASS__));
+      $profiles = getAllDataFromTable(getTableForItemType(__CLASS__));
 
       //Load mapping of old rights to their new equivalent
       $oldrights = self::getOldRightsMappings();
@@ -570,7 +572,4 @@ class PluginFusioninventoryProfile extends Profile {
          $profile->update($dataprofile);
       }
    }
-
-
 }
-

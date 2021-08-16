@@ -103,7 +103,7 @@ if (isset($_POST["dropdown_calendar"]) && isset($_POST["dropdown_sup_inf"])) {
       echo "</th>";
       echo "</tr>";
 
-   while ($data = $DB->fetch_array($result)) {
+   while ($data = $DB->fetchArray($result)) {
       echo "<tr class='tab_bg_1'>";
       echo "<td>";
       $networkport->getFromDB($data['id']);
@@ -192,7 +192,7 @@ function displaySearchForm() {
 
    // Display Reset search
    echo "<td>";
-   echo "<a href='".$CFG_GLPI["root_doc"]."/plugins/fusioninventory/report/ports_date_connections.php?reset_search=reset_search' ><img title=\"".__('Blank')."\" alt=\"".__('Blank')."\" src='".$CFG_GLPI["root_doc"]."/pics/reset.png' class='calendrier'></a>";
+   echo "<a href='".Plugin::getWebDir('fusioninventory')."/report/ports_date_connections.php?reset_search=reset_search' ><img title=\"".__('Blank')."\" alt=\"".__('Blank')."\" src='".$CFG_GLPI["root_doc"]."/pics/reset.png' class='calendrier'></a>";
    echo "</td>";
 
    echo "<td>";

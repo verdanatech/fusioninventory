@@ -213,7 +213,7 @@ class PluginFusioninventoryTaskjoblog extends CommonDBTM {
          'id'            => '5',
          'table'         => $this->getTable(),
          'field'         => 'date',
-         'name'          => __('Date'),
+         'name'          => _n('Date', 'Dates', 1),
          'datatype'      => 'datetime',
          'massiveaction' => false,
       ];
@@ -258,19 +258,17 @@ class PluginFusioninventoryTaskjoblog extends CommonDBTM {
     * @global array $CFG_GLPI
     */
    function javascriptHistory() {
-      global $CFG_GLPI;
+      $fi_path = Plugin::getWebDir('fusioninventory');
 
             echo "<script  type='text/javascript'>
 function close_array(id) {
-   document.getElementById('plusmoins'+id).innerHTML = '<img src=\'".
-                    $CFG_GLPI['root_doc']."/plugins/fusioninventory/pics/collapse.png\''+
+   document.getElementById('plusmoins'+id).innerHTML = '<img src=\'".$fi_path."/pics/collapse.png\''+
       'onClick=\'document.getElementById(\"viewfollowup'+id+'\").hide();appear_array('+id+');\' />".
-         "&nbsp;<img src=\'".$CFG_GLPI['root_doc']."/plugins/fusioninventory/pics/refresh.png\' />';
+         "&nbsp;<img src=\'".$fi_path."/pics/refresh.png\' />';
    document.getElementById('plusmoins'+id).style.backgroundColor = '#e4e4e2';
 }
 function appear_array(id) {
-   document.getElementById('plusmoins'+id).innerHTML = '<img src=\'".
-                    $CFG_GLPI['root_doc']."/plugins/fusioninventory/pics/expand.png\''+
+   document.getElementById('plusmoins'+id).innerHTML = '<img src=\'".$fi_path."/pics/expand.png\''+
       'onClick=\'document.getElementById(\"viewfollowup'+id+'\").show();close_array('+id+');\' />';
    document.getElementById('plusmoins'+id).style.backgroundColor = '#f2f2f2';
 
@@ -278,10 +276,8 @@ function appear_array(id) {
 
       </script>";
 
-      echo "<script type='text/javascript' src='".
-              $CFG_GLPI['root_doc']."/plugins/fusioninventory/prototype.js'></script>";
-      echo "<script type='text/javascript' src='".
-              $CFG_GLPI['root_doc']."/plugins/fusioninventory/effects.js'></script>";
+      echo "<script type='text/javascript' src='".$fi_path."/prototype.js'></script>";
+      echo "<script type='text/javascript' src='".$fi_path."/effects.js'></script>";
    }
 
 
@@ -298,6 +294,8 @@ function appear_array(id) {
                              $nb_td = 5) {
       global $CFG_GLPI;
 
+      $fi_path = Plugin::getWebDir('fusioninventory');
+
       $pfTaskjobstate = new PluginFusioninventoryTaskjobstate();
       $pfAgent        = new PluginFusioninventoryAgent();
 
@@ -310,8 +308,7 @@ function appear_array(id) {
 
       echo "<tr class='tab_bg_1'>";
       echo "<td width='40' id='plusmoins".$pfTaskjobstate->fields["id"]."'><img src='".
-               $CFG_GLPI['root_doc'].
-               "/plugins/fusioninventory/pics/expand.png' ".
+               $fi_path."/pics/expand.png' ".
                "onClick='document.getElementById(\"viewfollowup".$pfTaskjobstate->fields["id"].
                "\").show();close_array(".$pfTaskjobstate->fields["id"].");' /></td>";
 
@@ -339,8 +336,7 @@ function appear_array(id) {
 
       Ajax::updateItemOnEvent('plusmoins'.$pfTaskjobstate->fields["id"],
                       'viewfollowup'.$pfTaskjobstate->fields["id"],
-                      $CFG_GLPI['root_doc'].
-                         "/plugins/fusioninventory/ajax/showtaskjoblogdetail.php",
+                      $fi_path."/ajax/showtaskjoblogdetail.php",
                       ['agents_id' =>
                                  $pfTaskjobstate->fields['plugin_fusioninventory_agents_id'],
                           'uniqid' => $pfTaskjobstate->fields['uniqid']],
@@ -355,7 +351,7 @@ function appear_array(id) {
       if ($displayforceend == "0") {
          echo "<td align='center'>";
          echo "<form name='form' method='post' action='".
-                 $CFG_GLPI['root_doc']."/plugins/fusioninventory/front/taskjob.form.php'>";
+                 $fi_path."/front/taskjob.form.php'>";
          echo "<input type='hidden' name='taskjobstates_id' value='".
                  $pfTaskjobstate->fields['id']."' />";
          echo "<input type='hidden' name='taskjobs_id' value='".
@@ -410,7 +406,7 @@ function appear_array(id) {
             $text .= "<th colspan='2'><img src='".$CFG_GLPI['root_doc']."/pics/puce.gif' />".
                          __('Process number', 'fusioninventory')."&nbsp;: ".$data['id']."</th>";
             $text .= "<th>";
-            $text .= __('Date');
+            $text .= _n('Date', 'Dates', 1);
 
             $text .= "</th>";
             $text .= "<th>";
@@ -654,7 +650,7 @@ function appear_array(id) {
               "plugin_fusioninventory_agents_id";
       $result=$DB->query($query);
       if ($result) {
-         while ($datajob=$DB->fetch_array($result)) {
+         while ($datajob=$DB->fetchArray($result)) {
             $finishState[$datajob['state']]++;
          }
       }
@@ -681,7 +677,7 @@ function appear_array(id) {
     * @return array with data of table glpi_plugin_fusioninventory_taskjobstates
     */
    static function getByUniqID($uuid) {
-      $a_datas = getAllDatasFromTable('glpi_plugin_fusioninventory_taskjobstates',
+      $a_datas = getAllDataFromTable('glpi_plugin_fusioninventory_taskjobstates',
                                       ['uniqid' => $uuid],
                                       "1");
       foreach ($a_datas as $a_data) {
@@ -776,7 +772,4 @@ function appear_array(id) {
       }
       return str_replace(",[", "<br/>[", $comment);
    }
-
 }
-
-

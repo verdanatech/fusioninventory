@@ -88,13 +88,11 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
     * @return boolean
     */
    static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
-      global $CFG_GLPI;
 
-      if ($item->getID() > 0) {
+      if ($item->fields['id'] > 0) {
          $pfNetworkEquipment = new self();
          $options = [
-            'target' => $CFG_GLPI['root_doc'].
-               '/plugins/fusioninventory/front/switch_info.form.php'
+            'target' => Plugin::getWebDir('fusioninventory').'/front/switch_info.form.php'
          ];
 
          switch (Session::getActiveTab('NetworkEquipment')) {
@@ -172,8 +170,7 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
          return;
       }
 
-      echo "<form action='".$CFG_GLPI['root_doc'].
-         "/plugins/fusioninventory/front/networkport.display.php' method='post'>";
+      echo "<form action='".Plugin::getWebDir('fusioninventory')."/front/networkport.display.php' method='post'>";
       echo __('Display the view', 'fusioninventory');
       echo ' <i>'.$_SESSION['plugin_fusioninventory_networkportview']."</i>. ";
       echo __('If you prefer, you can display the view', 'fusioninventory');
@@ -230,13 +227,13 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
          AND `instantiation_type`='NetworkPortAggregate'
       ORDER BY logical_number ";
       $result = $DB->query($query);
-      while ($data = $DB->fetch_array($result)) {
+      while ($data = $DB->fetchArray($result)) {
          $query_ag = "SELECT * FROM `glpi_networkportaggregates`
             WHERE `networkports_id`='".$data['id']."'
             LIMIT 1";
          $result_ag = $DB->query($query_ag);
          if ($DB->numrows($result_ag) > 0) {
-            $data_ag = $DB->fetch_assoc($result_ag);
+            $data_ag = $DB->fetchAssoc($result_ag);
             $a_ports = importArrayFromDB($data_ag['networkports_id_list']);
             foreach ($a_ports as $port_id) {
                $a_aggregated_ports[$port_id] = $port_id;
@@ -283,7 +280,7 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
 
       if ($result) {
          $aDescr = []; $aResult = [];
-         while ($data = $DB->fetch_array($result)) {
+         while ($data = $DB->fetchArray($result)) {
             $aDescr[]  = $data['ifdescr'];
             $aResult[] = $data;
          }
@@ -298,7 +295,7 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
                   LIMIT 1";
                $result_ag = $DB->query($query_ag);
                if ($DB->numrows($result_ag) > 0) {
-                  $data_ag = $DB->fetch_assoc($result_ag);
+                  $data_ag = $DB->fetchAssoc($result_ag);
                   $a_ports = importArrayFromDB($data_ag['networkports_id_list']);
                   foreach ($a_ports as $port_id) {
                      $query_agp = "
@@ -314,7 +311,7 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
                      LIMIT 1 ";
                      $result_agp = $DB->query($query_agp);
                      if ($DB->numrows($result_agp) > 0) {
-                        $data_agp = $DB->fetch_assoc($result_agp);
+                        $data_agp = $DB->fetchAssoc($result_agp);
                         $this->showNetworkPortDetail($data_agp, $monitoring, true);
                      }
                   }
@@ -545,6 +542,8 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
    function showNetworkPortDetailHeader($monitoring, $query) {
       global $DB, $CFG_GLPI;
 
+      $fi_path = Plugin::getWebDir('fusioninventory');
+
       $a_pref = DisplayPreference::getForTypeUser('PluginFusioninventoryNetworkport',
                                                   Session::getLoginUserID());
 
@@ -595,13 +594,13 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
              __('Connection with a switch or a server in trunk or tagged mode', 'fusioninventory').
              "&nbsp;:</li>
          </ul>
-         <img src='".$CFG_GLPI['root_doc']."/plugins/fusioninventory/pics/port_trunk.png' ".
+         <img src='".$fi_path."/pics/port_trunk.png' ".
               "width='750' />
          <ul>
             <li>".__('Other connections (with a computer, a printer...)', 'fusioninventory').
               "&nbsp;:</li>
          </ul>
-         <img src='".$CFG_GLPI['root_doc']."/plugins/fusioninventory/pics/connected_trunk.png' ".
+         <img src='".$fi_path."/pics/connected_trunk.png' ".
               "width='750' />
          </td>
       </tr>";
@@ -696,6 +695,8 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
    function showNetworkPortDetail($data, $monitoring, $aggrega = 0) {
       global $CFG_GLPI, $DB;
 
+      $fi_path = Plugin::getWebDir('fusioninventory');
+
       $nw            = new NetworkPort_NetworkPort();
       $networkName   = new NetworkName();
       $networkPort   = new NetworkPort();
@@ -710,17 +711,14 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
       if (($pfNetworkPort->fields["trunk"] == "1")
                  && (strstr($pfNetworkPort->fields["ifstatus"], "up")
               || $pfNetworkPort->fields["ifstatus"] == 1)) {
-         $background_img = " style='background-image: url(\"".$CFG_GLPI['root_doc'].
-                              "/plugins/fusioninventory/pics/port_trunk.png\"); '";
+         $background_img = " style='background-image: url(\"".$fi_path."/pics/port_trunk.png\"); '";
       } else if (PluginFusioninventoryNetworkPort::isPortHasMultipleMac($data['id'])
               && (strstr($pfNetworkPort->fields["ifstatus"], "up")
               || $pfNetworkPort->fields["ifstatus"] == 1)) {
-         $background_img = " style='background-image: url(\"".$CFG_GLPI['root_doc'].
-                              "/plugins/fusioninventory/pics/multiple_mac_addresses.png\"); '";
+         $background_img = " style='background-image: url(\"".$fi_path."/pics/multiple_mac_addresses.png\"); '";
       } else if (strstr($pfNetworkPort->fields["ifstatus"], "up")
               || $pfNetworkPort->fields["ifstatus"] == 1) {
-         $background_img = " style='background-image: url(\"".$CFG_GLPI['root_doc'].
-                              "/plugins/fusioninventory/pics/connected_trunk.png\"); '";
+         $background_img = " style='background-image: url(\"".$fi_path."/pics/connected_trunk.png\"); '";
       }
       echo "<tr class='tab_bg_1 center' height='40'".$background_img.">";
 
@@ -779,8 +777,7 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
                   echo "<img src='".$CFG_GLPI['root_doc']."/pics/redbutton.png'/>";
                } else if (strstr($pfNetworkPort->fields["ifstatus"], "testing")
                        || strstr($pfNetworkPort->fields["ifinternalstatus"], "3")) {
-                  echo "<img src='".$CFG_GLPI['root_doc'].
-                           "/plugins/fusioninventory/pics/yellowbutton.png'/>";
+                  echo "<img src='".$fi_path."/pics/yellowbutton.png'/>";
                }
                echo "</td>";
                break;
@@ -911,15 +908,14 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
                                    LIMIT 1";
                            $result_devicephone = $DB->query($query_devicephone);
                            if ($DB->numrows($result_devicephone) > 0) {
-                              $data_devicephone = $DB->fetch_assoc($result_devicephone);
+                              $data_devicephone = $DB->fetchAssoc($result_devicephone);
                               $computer_ports_id = $nw->getOppositeContact($data_devicephone["id"]);
                               if ($computer_ports_id) {
                                  $networkport = new NetworkPort();
                                  $networkport->getFromDB($computer_ports_id);
                                  if ($networkport->fields['itemtype'] == 'Computer') {
                                     echo "<hr/>";
-                                    echo "<img src='".$CFG_GLPI['root_doc'].
-                                            "/plugins/fusioninventory/pics/computer_icon.png' ".
+                                    echo "<img src='".$fi_path."/pics/computer_icon.png' ".
                                             "style='float:left'/> ";
                                     $computer = new Computer();
                                     $computer->getFromDB($networkport->fields["items_id"]);
@@ -957,20 +953,16 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
                echo "<td>";
                if (strstr($pfNetworkPort->fields["ifstatus"], "up")
                        || strstr($pfNetworkPort->fields["ifstatus"], "1")) {
-                  echo "<img src='".$CFG_GLPI['root_doc'].
-                          "/plugins/fusioninventory/pics/wired_on.png'/>";
+                  echo "<img src='".$fi_path."/pics/wired_on.png'/>";
                } else if (strstr($pfNetworkPort->fields["ifstatus"], "down")
                        || strstr($pfNetworkPort->fields["ifstatus"], "2")) {
-                  echo "<img src='".$CFG_GLPI['root_doc'].
-                          "/plugins/fusioninventory/pics/wired_off.png'/>";
+                  echo "<img src='".$fi_path."/pics/wired_off.png'/>";
                } else if (strstr($pfNetworkPort->fields["ifstatus"], "testing")
                        || strstr($pfNetworkPort->fields["ifstatus"], "3")) {
-                  echo "<img src='".$CFG_GLPI['root_doc'].
-                          "/plugins/fusioninventory/pics/yellowbutton.png'/>";
+                  echo "<img src='".$fi_path."/pics/yellowbutton.png'/>";
                } else if (strstr($pfNetworkPort->fields["ifstatus"], "dormant")
                        || strstr($pfNetworkPort->fields["ifstatus"], "5")) {
-                  echo "<img src='".$CFG_GLPI['root_doc'].
-                          "/plugins/fusioninventory/pics/orangebutton.png'/>";
+                  echo "<img src='".$fi_path."/pics/orangebutton.png'/>";
                }
                echo "</td>";
                break;
@@ -987,7 +979,7 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
                $result_vlan = $DB->query($query_vlan);
                if ($DB->numrows($result_vlan) > 0) {
                   echo "<table cellpadding='0' cellspacing='0'>";
-                  while ($line = $DB->fetch_array($result_vlan)) {
+                  while ($line = $DB->fetchArray($result_vlan)) {
                      $used[] = $line["vlans_id"];
                      $vlan = new Vlan();
                      $vlan->getFromDB($line["vlans_id"]);
@@ -1075,8 +1067,7 @@ class PluginFusioninventoryNetworkEquipment extends PluginFusioninventoryItem {
             break;
       }
       if ($icon) {
-         return "<img src='".$CFG_GLPI['root_doc'].
-                 "/plugins/fusioninventory/pics/$icon' ".
+         return "<img src='".Plugin::getWebDir('fusioninventory')."/pics/$icon' ".
                  "style='float:left'/> ";
       } else {
          return '';

@@ -89,10 +89,11 @@ class PluginFusioninventoryInventoryComputerBlacklist extends CommonDBTM {
       ];
 
       $tab[] = [
-         'id'        => '1',
-         'table'     => $this->getTable(),
-         'field'     => 'value',
-         'name'      => __('blacklisted value', 'fusioninventory'),
+         'id'           => '1',
+         'table'        => $this->getTable(),
+         'field'        => 'value',
+         'name'         => __('blacklisted value', 'fusioninventory'),
+         'autocomplete' => true,
       ];
 
       $tab[] = [
@@ -101,7 +102,7 @@ class PluginFusioninventoryInventoryComputerBlacklist extends CommonDBTM {
          'field'         => 'name',
          'linkfield'     => 'plugin_fusioninventory_criterium_id',
          'name'          => __('Type'),
-         'datatype'      => 'itemlink',
+         'datatype'      => 'dropdown',
          'itemlink_type' => 'PluginFusioninventoryInventoryComputerCriteria',
       ];
 
@@ -396,7 +397,4 @@ class PluginFusioninventoryInventoryComputerBlacklist extends CommonDBTM {
       }
       return $a_computerinventory;
    }
-
-
 }
-

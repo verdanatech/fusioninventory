@@ -127,11 +127,12 @@ class PluginFusioninventoryIPRange extends CommonDBTM {
       ];
 
       $tab[] = [
-         'id'        => '1',
-         'table'     => $this->getTable(),
-         'field'     => 'name',
-         'name'      => __('Name'),
-         'datatype'  => 'itemlink',
+         'id'           => '1',
+         'table'        => $this->getTable(),
+         'field'        => 'name',
+         'name'         => __('Name'),
+         'datatype'     => 'itemlink',
+         'autocomplete' => true,
       ];
 
       $tab[] = [
@@ -139,7 +140,7 @@ class PluginFusioninventoryIPRange extends CommonDBTM {
          'table'     => 'glpi_entities',
          'field'     => 'completename',
          'linkfield' => 'entities_id',
-         'name'      => __('Entity'),
+         'name'      => Entity::getTypeName(1),
          'datatype'  => 'dropdown',
       ];
 
@@ -300,7 +301,7 @@ class PluginFusioninventoryIPRange extends CommonDBTM {
 
       echo "<tr class='tab_bg_1'>";
       if (Session::isMultiEntitiesMode()) {
-         echo "<td align='center' colspan='2'>".__('Entity')."</td>";
+         echo "<td align='center' colspan='2'>".Entity::getTypeName(1)."</td>";
          echo "<td align='center' colspan='2'>";
          Dropdown::show('Entity',
                         ['name'=>'entities_id',
@@ -371,7 +372,7 @@ class PluginFusioninventoryIPRange extends CommonDBTM {
     */
    function post_purgeItem() {
       $pfIPRange_ConfigSecurity = new PluginFusioninventoryIPRange_ConfigSecurity();
-      $a_data = getAllDatasFromTable('glpi_plugin_fusioninventory_ipranges_configsecurities',
+      $a_data = getAllDataFromTable('glpi_plugin_fusioninventory_ipranges_configsecurities',
          ['plugin_fusioninventory_ipranges_id' => $this->fields['id']]);
       foreach ($a_data as $data) {
          $pfIPRange_ConfigSecurity->delete($data);
@@ -394,7 +395,4 @@ class PluginFusioninventoryIPRange extends CommonDBTM {
       }
       return $actions;
    }
-
-
 }
-

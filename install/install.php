@@ -44,7 +44,6 @@
  *
  */
 
-
 /**
  * This function manage the installation of the plugin.
  *
@@ -63,14 +62,14 @@ function pluginFusioninventoryInstall($version, $migrationname = 'Migration') {
    /*
     * Load classes
     */
-   require_once(GLPI_ROOT . '/plugins/fusioninventory/inc/commonview.class.php');
-   require_once(GLPI_ROOT . '/plugins/fusioninventory/inc/taskjobview.class.php');
-   require_once(GLPI_ROOT . '/plugins/fusioninventory/inc/taskview.class.php');
-   require_once(GLPI_ROOT . '/plugins/fusioninventory/inc/deploypackageitem.class.php');
-   require_once(GLPI_ROOT . '/plugins/fusioninventory/inc/item.class.php');
-   require_once(GLPI_ROOT . '/plugins/fusioninventory/inc/collectcommon.class.php');
-   require_once(GLPI_ROOT . '/plugins/fusioninventory/inc/collectcontentcommon.class.php');
-   foreach (glob(GLPI_ROOT.'/plugins/fusioninventory/inc/*.php') as $file) {
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . '/inc/commonview.class.php');
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . '/inc/taskjobview.class.php');
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . '/inc/taskview.class.php');
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . '/inc/deploypackageitem.class.php');
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . '/inc/item.class.php');
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . '/inc/collectcommon.class.php');
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . '/inc/collectcontentcommon.class.php');
+   foreach (glob(PLUGIN_FUSIONINVENTORY_DIR.'/inc/*.php') as $file) {
       require_once($file);
    }
 
@@ -152,17 +151,17 @@ function pluginFusioninventoryInstall($version, $migrationname = 'Migration') {
     * Create DB structure
     */
    $migration->displayMessage("Creation tables in database");
-   $DB_file = GLPI_ROOT ."/plugins/fusioninventory/install/mysql/plugin_fusioninventory-empty.sql";
+   $DB_file = PLUGIN_FUSIONINVENTORY_DIR ."/install/mysql/plugin_fusioninventory-empty.sql";
    if (!$DB->runFile($DB_file)) {
       $migration->displayMessage("Error on creation tables in database");
    }
-   if (!$DB->runFile(GLPI_ROOT ."/plugins/fusioninventory/install/mysql/usbid.sql")) {
+   if (!$DB->runFile(PLUGIN_FUSIONINVENTORY_DIR ."/install/mysql/usbid.sql")) {
       $migration->displayMessage("Error on creation table usbid in database");
    }
-   if (!$DB->runFile(GLPI_ROOT ."/plugins/fusioninventory/install/mysql/pciid.sql")) {
+   if (!$DB->runFile(PLUGIN_FUSIONINVENTORY_DIR ."/install/mysql/pciid.sql")) {
       $migration->displayMessage("Error on creation table pciid in database");
    }
-   if (!$DB->runFile(GLPI_ROOT ."/plugins/fusioninventory/install/mysql/oui.sql")) {
+   if (!$DB->runFile(PLUGIN_FUSIONINVENTORY_DIR ."/install/mysql/oui.sql")) {
       $migration->displayMessage("Error on creation table oui in database");
    }
 
@@ -226,7 +225,7 @@ function pluginFusioninventoryInstall($version, $migrationname = 'Migration') {
          WHERE `itemtype`='PluginFusioninventoryUnmanaged'
             AND `glpi_plugin_fusioninventory_unmanageds`.`id` IS NULL ";
    $result=$DB->query($sql);
-   while ($data=$DB->fetch_array($result)) {
+   while ($data=$DB->fetchArray($result)) {
       $networkPort->delete(['id'=>$data['nid']], 1);
    }
 
@@ -331,7 +330,7 @@ function pluginFusioninventoryInstall($version, $migrationname = 'Migration') {
    $pfNetworkporttype = new PluginFusioninventoryNetworkporttype();
    $pfNetworkporttype->init();
 
-   require_once(GLPI_ROOT . "/plugins/fusioninventory/inc/inventorycomputerstat.class.php");
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . "/inc/inventorycomputerstat.class.php");
    PluginFusioninventoryInventoryComputerStat::init();
 
    /*

@@ -82,7 +82,7 @@ class PluginFusioninventoryMapping extends CommonDBTM {
    function set($parm) {
       global $DB;
 
-      $data = current(getAllDatasFromTable("glpi_plugin_fusioninventory_mappings",
+      $data = current(getAllDataFromTable("glpi_plugin_fusioninventory_mappings",
          ['itemtype' => $parm['itemtype'], 'name' => $parm['name']]));
       if (empty($data)) {
          // Insert
@@ -853,7 +853,4 @@ class PluginFusioninventoryMapping extends CommonDBTM {
       }
       return $mapping['name'];
    }
-
-
 }
-

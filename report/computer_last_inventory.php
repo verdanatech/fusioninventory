@@ -60,6 +60,9 @@ if ($nbdays == '') {
 }
 
 $state = filter_input(INPUT_GET, "state");
+if (!is_numeric($state)) {
+   $state = 0;
+}
 
 echo "<form action='".filter_input(INPUT_SERVER, "PHP_SELF")."' method='get'>";
 echo "<table class='tab_cadre' cellpadding='5'>";
@@ -133,7 +136,7 @@ echo "<th>".__('Inventory number')."</th>";
 echo "<th>".__('Status')."</th>";
 echo "</tr>";
 
-while ($data=$DB->fetch_array($result)) {
+while ($data=$DB->fetchArray($result)) {
    echo "<tr class='tab_bg_1'>";
    echo "<td>";
    $computer->getFromDB($data['computers_id']);

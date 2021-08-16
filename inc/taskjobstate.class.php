@@ -174,10 +174,10 @@ class PluginFusioninventoryTaskjobstate extends CommonDBTM {
          return true;
       } else if ($item->getType() == 'Computer') {
          $pfTaskJobState = new PluginFusioninventoryTaskjobstate();
-         $pfTaskJobState->showStatesForComputer($item->getID());
+         $pfTaskJobState->showStatesForComputer($item->fields['id']);
          echo "<br>";
          $pfDeployGroup = new PluginFusioninventoryDeployGroup();
-         $pfDeployGroup->showForComputer($item->getID());
+         $pfDeployGroup->showForComputer($item->fields['id']);
       }
       return false;
    }
@@ -251,7 +251,9 @@ class PluginFusioninventoryTaskjobstate extends CommonDBTM {
     * @param string $state (all or each state : running, finished, nostarted)
     */
    function stateTaskjobItem($items_id, $itemtype, $state = 'all') {
-      global $DB, $CFG_GLPI;
+      global $DB;
+
+      $fi_path = Plugin::getWebDir('fusioninventory');
 
       $pfTaskjoblog = new PluginFusioninventoryTaskjoblog();
       $icon         = "";
@@ -263,17 +265,15 @@ class PluginFusioninventoryTaskjobstate extends CommonDBTM {
       switch ($state) {
 
          case 'running':
-            $fields['state'] = ['NOT', $self::FINISHED];
+            $fields['state'] = ['NOT', self::FINISHED];
             $title = __('Running tasks', 'fusioninventory');
-            $icon  = "<img src='".$CFG_GLPI['root_doc'].
-                     "/plugins/fusioninventory/pics/task_running.png'/>";
+            $icon  = "<img src='".$fi_path."/pics/task_running.png'/>";
             break;
 
          case 'finished':
-            $fields['state'] = $self::FINISHED;
+            $fields['state'] = self::FINISHED;
             $title = __('Finished tasks', 'fusioninventory');
-            $icon  = "<img src='".$CFG_GLPI['root_doc'].
-                      "/plugins/fusioninventory/pics/task_finished.png'/>";
+            $icon  = "<img src='".$fi_path."/pics/task_finished.png'/>";
             break;
 
          case 'all':
@@ -315,7 +315,7 @@ class PluginFusioninventoryTaskjobstate extends CommonDBTM {
          echo "<th>".__('Job', 'fusioninventory')."</th>";
          echo "<th>".__('Agent', 'fusioninventory')."</th>";
          echo "<th>";
-         echo __('Date');
+         echo _n('Date', 'Dates', 1);
          echo "</th>";
          echo "<th>";
          echo __('Status');
@@ -405,7 +405,9 @@ class PluginFusioninventoryTaskjobstate extends CommonDBTM {
       if (isset($params['last_date'])) {
          $last_date = $params['last_date'];
       }
-
+      if (!preg_match("/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/", $last_date)) {
+         $last_date = null;
+      }
       if (!is_null($id) && !is_null($last_date)) {
          echo json_encode($this->getLogs($id, $last_date));
       }
@@ -660,7 +662,7 @@ class PluginFusioninventoryTaskjobstate extends CommonDBTM {
             ]
          );
          $stmt = $DB->prepare($delete);
-         while ($data=$DB->fetch_array($result)) {
+         while ($data=$DB->fetchArray($result)) {
             $pfTaskjobstate->getFromDB($data['plugin_fusioninventory_taskjobstates_id']);
             $pfTaskjobstate->delete($pfTaskjobstate->fields, 1);
 
@@ -740,7 +742,7 @@ class PluginFusioninventoryTaskjobstate extends CommonDBTM {
       echo __('Module method');
       echo "</th>";
       echo "<th>";
-      echo __('Date');
+      echo _n('Date', 'Dates', 1);
       echo "</th>";
       echo "<th>";
       echo __('Status');

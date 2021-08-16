@@ -86,7 +86,7 @@ class PluginFusioninventoryPrinterCartridge extends CommonDBTM {
       $exclude_cartridges = [];
 
       if ($result_cartridges !== false) {
-         while ($cartridge = $DB->fetch_array($result_cartridges)) {
+         while ($cartridge = $DB->fetchArray($result_cartridges)) {
             $exclude_cartridges[] = $cartridge['id'];
          }
       }
@@ -143,7 +143,4 @@ class PluginFusioninventoryPrinterCartridge extends CommonDBTM {
       echo "</div>";
       return true;
    }
-
-
 }
-

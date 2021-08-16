@@ -136,6 +136,7 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
          'name'          => __('Name'),
          'datatype'      => 'itemlink',
          'itemlink_type' => $this->getType(),
+         'autocomplete'  => true,
       ];
 
       $tab[] = [
@@ -155,24 +156,27 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
       ];
 
       $tab[] = [
-         'id'        => '4',
-         'table'     => $this->getTable(),
-         'field'     => 'serial',
-         'name'      => __('Serial Number'),
+         'id'           => '4',
+         'table'        => $this->getTable(),
+         'field'        => 'serial',
+         'name'         => __('Serial Number'),
+         'autocomplete' => true,
       ];
 
       $tab[] = [
-         'id'        => '5',
-         'table'     => $this->getTable(),
-         'field'     => 'otherserial',
-         'name'      => __('Inventory number'),
+         'id'           => '5',
+         'table'        => $this->getTable(),
+         'field'        => 'otherserial',
+         'name'         => __('Inventory number'),
+         'autocomplete' => true,
       ];
 
       $tab[] = [
-         'id'        => '6',
-         'table'     => $this->getTable(),
-         'field'     => 'contact',
-         'name'      => __('Contact'),
+         'id'           => '6',
+         'table'        => $this->getTable(),
+         'field'        => 'contact',
+         'name'         => __('Contact'),
+         'autocomplete' => true,
       ];
 
       $tab[] = [
@@ -188,7 +192,7 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
          'table'     => 'glpi_entities',
          'field'     => 'completename',
          'linkfield' => 'entities_id',
-         'name'      => __('Entity'),
+         'name'      => Entity::getTypeName(1),
          'datatype'  => 'dropdown',
       ];
 
@@ -242,6 +246,14 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
          'datatype'  => 'dropdown',
       ];
 
+      $tab[] = [
+         'id'           => '18',
+         'table'        => $this->getTable(),
+         'field'        => 'ip',
+         'name'         => __('IP'),
+         'autocomplete' => true,
+      ];
+
       return $tab;
    }
 
@@ -278,12 +290,10 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
     * @return boolean
     */
    static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
-      global $CFG_GLPI;
-
       if ($tabnum == 1) {
          $pfUnmanaged = new self();
-         $pfUnmanaged->importForm($CFG_GLPI['root_doc'] .
-               '/plugins/fusioninventory/front/unmanaged.form.php?id='.$item->fields["id"],
+         $pfUnmanaged->importForm(Plugin::getWebDir('fusioninventory') .
+               '/front/unmanaged.form.php?id='.$item->fields["id"],
                                    $item->fields["id"]);
          return true;
       }
@@ -392,7 +402,7 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
       echo "</td>";
 
       if (Session::isMultiEntitiesMode()) {
-         echo "<td align='center'>" . __('Entity') . "&nbsp;:</td>";
+         echo "<td align='center'>" . Entity::getTypeName(1) . "&nbsp;:</td>";
          echo "</td>";
          echo "<td align='center'>";
          Dropdown::show("Entity",
@@ -559,7 +569,7 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
       $unmanaged_infos = [];
       $result=$DB->query($query);
       if ($result) {
-         while ($data=$DB->fetch_array($result)) {
+         while ($data=$DB->fetchArray($result)) {
             $unmanaged_infos["name"] = '';
             $newID=$this->add($unmanaged_infos);
 
@@ -697,7 +707,7 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
       $result = $DB->query($query);
       $freeport_id = 0;
       if ($DB->numrows($result) == 1) {
-         $freeport = $DB->fetch_assoc($result);
+         $freeport = $DB->fetchAssoc($result);
          $freeport_id = $freeport['id'];
       } else {
          // Create port
@@ -895,7 +905,7 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
             $result = $DB->query($query);
             $data = [];
             if ($DB->numrows($result) > 0) {
-               $data = $DB->fetch_assoc($result);
+               $data = $DB->fetchAssoc($result);
             }
             $data['sysdescr'] = $this->fields['sysdescr'];
             $data['plugin_fusioninventory_configsecurities_id'] =
@@ -944,7 +954,7 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
             $result = $DB->query($query);
             $data = [];
             if ($DB->numrows($result) > 0) {
-               $data = $DB->fetch_assoc($result);
+               $data = $DB->fetchAssoc($result);
             }
 
             $data['sysdescr'] = $this->fields['sysdescr'];
@@ -1050,7 +1060,4 @@ class PluginFusioninventoryUnmanaged extends CommonDBTM {
       $networkPort= new NetworkPort();
       $networkPort->cleanDBonItemDelete($this->getType(), $this->fields['id']);
    }
-
-
 }
-

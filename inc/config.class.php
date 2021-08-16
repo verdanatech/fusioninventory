@@ -266,7 +266,7 @@ class PluginFusioninventoryConfig extends CommonDBTM {
     * @param integer $withtemplate 1 if is a template form
     * @return boolean
     */
-   static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
+   static function displayTabContentForItem($item, $tabnum = 1, $withtemplate = 0) {
 
       switch ($tabnum) {
 
@@ -466,7 +466,7 @@ class PluginFusioninventoryConfig extends CommonDBTM {
       echo "</tr>";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td>".__('Network equpment')."</td>";
+      echo "<td>".__('Network equipment', 'fusioninventory')."</td>";
       echo "<td>";
       echo "<input type='text' name='auto_inventory_number_networkequipment' value='".$this->getValue('auto_inventory_number_networkequipment')."'/>";
       echo "</td>";
@@ -844,7 +844,7 @@ class PluginFusioninventoryConfig extends CommonDBTM {
 
       $pfConfigLogField = new PluginFusioninventoryConfigLogField();
       $pfConfigLogField->showForm([
-          'target'=>$CFG_GLPI['root_doc']."/plugins/fusioninventory/front/configlogfield.form.php"]
+          'target'=>Plugin::getWebDir('fusioninventory')."/front/configlogfield.form.php"]
           );
 
       $pfNetworkporttype = new PluginFusioninventoryNetworkporttype();
@@ -1010,7 +1010,4 @@ class PluginFusioninventoryConfig extends CommonDBTM {
          }
       }
    }
-
-
 }
-

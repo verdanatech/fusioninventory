@@ -78,7 +78,7 @@ class PluginFusioninventoryTaskjobView extends PluginFusioninventoryCommonView {
     */
    function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
       $tab_names = [];
-      if ($item->getID() > 0 and $this->can('task', READ)) {
+      if ($item->fields['id'] > 0 and $this->can('task', READ)) {
          return __('Jobs configuration', 'fusioninventory');
       }
       return '';
@@ -97,12 +97,12 @@ class PluginFusioninventoryTaskjobView extends PluginFusioninventoryCommonView {
 
       $pfTaskJob = new PluginFusioninventoryTaskjob();
 
-      if ($item->getID() > 0) {
+      if ($item->fields['id'] > 0) {
          if ($item->getType() == 'PluginFusioninventoryTask') {
             echo "<div id='taskjobs_form'>";
             echo "</div>";
             echo "<div id='taskjobs_list' class='tab_cadre_fixe'>";
-            $pfTaskJob->showListForTask($item->getID());
+            $pfTaskJob->showListForTask($item->fields['id']);
             echo "</div>";
             return true;
          }
@@ -405,8 +405,12 @@ class PluginFusioninventoryTaskjobView extends PluginFusioninventoryCommonView {
 
       }
 
+      if (!preg_match("/^[a-zA-Z]+$/", $method)) {
+         $method = '';
+      }
+
       // filter actor list with active agent and with current module active
-      $condition = "";
+      $condition = [];
       if ($moduletype == "actors"
           && in_array($itemtype, ["Computer", "PluginFusioninventoryAgent"])) {
          // remove install suffix from deploy
@@ -427,7 +431,7 @@ class PluginFusioninventoryTaskjobView extends PluginFusioninventoryCommonView {
                           GROUP BY agents.`id`, agents.`computers_id`";
          $res_filter = $DB->query($query_filter);
          $filter_id = [];
-         while ($data_filter = $DB->fetch_assoc($res_filter)) {
+         while ($data_filter = $DB->fetchAssoc($res_filter)) {
             if ($itemtype == 'Computer') {
                $filter_id[] =  $data_filter['computers_id'];
             } else {
@@ -438,9 +442,9 @@ class PluginFusioninventoryTaskjobView extends PluginFusioninventoryCommonView {
          // if we found prepare condition for dropdown
          // else prepare a false condition for dropdown
          if (count($filter_id)) {
-            $condition = "`id` IN(".implode(',', $filter_id).")";
+            $condition = ['id' => $filter_id];
          } else {
-            $condition = "1 = 0";
+            $condition = ['0'];
          }
       }
 
@@ -466,8 +470,7 @@ class PluginFusioninventoryTaskjobView extends PluginFusioninventoryCommonView {
                  data-itemtype_name='$itemtype_name'
                  data-dropdown_rand_id='$dropdown_rand_id'>
                <input type='button' class=submit
-                      value='".__('Add')." $title'
-               </input>
+                      value='".__('Add')." $title' />
             </div>";
    }
 
@@ -527,7 +530,7 @@ class PluginFusioninventoryTaskjobView extends PluginFusioninventoryCommonView {
       $pfTask = $this->getTask();
 
       echo "<form method='post' name='form_taskjob' action='".
-            $CFG_GLPI["root_doc"]."/plugins/fusioninventory/front/taskjob.form.php''>";
+            Plugin::getWebDir('fusioninventory')."/front/taskjob.form.php''>";
 
       if (!$new_item) {
          echo "<input type='hidden' name='id' value='".$id."' />";
@@ -618,8 +621,8 @@ class PluginFusioninventoryTaskjobView extends PluginFusioninventoryCommonView {
          echo "</span>";
          echo "</div>";
 
-         echo "<div id='taskjob_moduletypes_dropdown' />";
-         echo "<div id='taskjob_moduleitems_dropdown' />";
+         echo "<div id='taskjob_moduletypes_dropdown'></div>";
+         echo "<div id='taskjob_moduleitems_dropdown'></div>";
          echo "</div>";
       }
 
@@ -870,7 +873,7 @@ class PluginFusioninventoryTaskjobView extends PluginFusioninventoryCommonView {
             $add_redirect = "&edit_job=$jobs_id#taskjobs_form";
          }
 
-         Html::redirect($CFG_GLPI["root_doc"]."/plugins/fusioninventory/front/task.form.php?id=".
+         Html::redirect(Plugin::getWebDir('fusioninventory')."/front/task.form.php?id=".
                                  $postvars['plugin_fusioninventory_tasks_id'].$add_redirect);
       } else if (isset($postvars["delete"])) {
          // * delete taskjob
@@ -936,5 +939,26 @@ class PluginFusioninventoryTaskjobView extends PluginFusioninventoryCommonView {
       }
    }
 
+
+   function rawSearchOptions() {
+
+      $tab = [];
+
+      $tab[] = [
+         'id'           => 'common',
+         'name'         => __('Characteristics')
+      ];
+
+      $tab[] = [
+         'id'           => '1',
+         'table'        => $this->getTable(),
+         'field'        => 'name',
+         'name'         => __('Name'),
+         'datatype'     => 'itemlink',
+         'autocomplete' => true,
+      ];
+
+      return $tab;
+   }
 
 }

@@ -44,7 +44,6 @@
  *
  */
 
-
 /**
  * Add search options for GLPI objects
  *
@@ -66,8 +65,8 @@ function plugin_fusioninventory_getAddSearchOptions($itemtype) {
 
       $sopt[5157]['table']     = 'glpi_plugin_fusioninventory_inventorycomputercomputers';
       $sopt[5157]['field']     = 'operatingsystem_installationdate';
-      $sopt[5157]['name']      = __('Operating system')." - ".__('Installation')." (".
-                                    strtolower(__('Date')).")";
+      $sopt[5157]['name']      = OperatingSystem::getTypeName(1)." - ".__('Installation')." (".
+                                    strtolower(_n('Date', 'Dates', 1)).")";
       $sopt[5157]['joinparams']  = ['jointype' => 'child'];
       $sopt[5157]['datatype']  = 'date';
       $sopt[5157]['massiveaction'] = false;
@@ -97,7 +96,7 @@ function plugin_fusioninventory_getAddSearchOptions($itemtype) {
 
       $sopt[5163]['table']     = 'glpi_plugin_fusioninventory_inventorycomputercomputers';
       $sopt[5163]['field']     = 'oscomment';
-      $sopt[5163]['name']      = __('Operating system').'/'.__('Comments');
+      $sopt[5163]['name']      = OperatingSystem::getTypeName(1).'/'.__('Comments');
       $sopt[5163]['joinparams']  = ['jointype' => 'child'];
       $sopt[5163]['massiveaction'] = false;
 
@@ -193,8 +192,6 @@ function plugin_fusioninventory_getAddSearchOptions($itemtype) {
       $sopt[5182]['datatype']  = 'datetime';
       $sopt[5182]['massiveaction'] = false;
 
-      $sopt += PluginFusioninventoryCollect::getSearchOptionsToAdd();
-
    }
 
    if ($itemtype == 'Computer') {
@@ -211,6 +208,8 @@ function plugin_fusioninventory_getAddSearchOptions($itemtype) {
       $sopt[5193]['linkfield'] = '';
       $sopt[5193]['name'] = __('FusInv', 'fusioninventory')." - ".__('Switch ports');
       $sopt[5193]['forcegroupby'] = '1';
+
+      $sopt += PluginFusioninventoryCollect::getSearchOptionsToAdd();
 
       $sopt[5197]['table']         = 'glpi_plugin_fusioninventory_agents';
       $sopt[5197]['field']         = 'last_contact';
@@ -318,7 +317,7 @@ function plugin_fusioninventory_getAddSearchOptions($itemtype) {
  * @return string
  */
 function plugin_fusioninventory_giveItem($type, $id, $data, $num) {
-   global $CFG_GLPI;
+   global $CFG_GLPI, $DB;
 
    $searchopt = &Search::getOptions($type);
    $table = $searchopt[$id]["table"];
@@ -485,8 +484,8 @@ function plugin_fusioninventory_giveItem($type, $id, $data, $num) {
                foreach ($list as $numtmp => $vartmp) {
                   $NetworkPort->getDeviceData($vartmp, 'PluginFusioninventoryUnmanaged');
 
-                  $out .= "<a href=\"".$CFG_GLPI["root_doc"]."/";
-                  $out .= "plugins/fusioninventory/front/unmanaged.form.php?id=".$vartmp.
+                  $out .= "<a href=\"".Plugin::getWebDir('fusioninventory');
+                  $out .= "/front/unmanaged.form.php?id=".$vartmp.
                              "\">";
                   $out .= $NetworkPort->device_name;
                   if ($CFG_GLPI["view_ID"]) {
@@ -687,23 +686,21 @@ function plugin_fusioninventory_giveItem($type, $id, $data, $num) {
                   $query = "SELECT * FROM `glpi_plugin_fusioninventory_printerlogs`
                      WHERE `printers_id`='".$data['raw']['ITEM_0_2']."'
                         AND `date`>= '".$_SESSION['glpi_plugin_fusioninventory_date_start']."'
-                        AND `date`<= '".$_SESSION['glpi_plugin_fusioninventory_date_end'].
-                           " 23:59:59'
+                        AND `date`<= '".$_SESSION['glpi_plugin_fusioninventory_date_end']." 23:59:59'
                      ORDER BY date asc
                      LIMIT 1";
                   $result = $DB->query($query);
-                  while ($data2 = $DB->fetch_array($result)) {
+                  while ($data2 = $DB->fetchArray($result)) {
                      $_SESSION['glpi_plugin_fusioninventory_history_start'] = $data2;
                   }
                   $query = "SELECT * FROM `glpi_plugin_fusioninventory_printerlogs`
                      WHERE `printers_id`='".$data['raw']['ITEM_0_2']."'
                         AND `date`>= '".$_SESSION['glpi_plugin_fusioninventory_date_start']."'
-                        AND `date`<= '".$_SESSION['glpi_plugin_fusioninventory_date_end'].
-                           " 23:59:59'
+                        AND `date`<= '".$_SESSION['glpi_plugin_fusioninventory_date_end']." 23:59:59'
                      ORDER BY date desc
                      LIMIT 1";
                   $result = $DB->query($query);
-                  while ($data2 = $DB->fetch_array($result)) {
+                  while ($data2 = $DB->fetchArray($result)) {
                      $_SESSION['glpi_plugin_fusioninventory_history_end'] = $data2;
                   }
                }
@@ -742,7 +739,7 @@ function plugin_fusioninventory_giveItem($type, $id, $data, $num) {
             case 'glpi_rules.id':
                $rule = new Rule();
                if ($rule->getFromDB($data['raw']["ITEM_$num"])) {
-                  $out = "<a href='".$CFG_GLPI['root_doc']."/plugins/fusioninventory/front/inventoryruleimport.form.php?id=";
+                  $out = "<a href='".Plugin::getWebDir('fusioninventory')."/front/inventoryruleimport.form.php?id=";
                   $out .= $data['raw']["ITEM_$num"]."'>".$rule->fields['name']."</a>";
                   return $out;
                }
@@ -825,13 +822,15 @@ function plugin_fusioninventory_install() {
    ini_set("max_execution_time", "0");
 
    if (basename(filter_input(INPUT_SERVER, "SCRIPT_NAME")) != "cli_install.php") {
-      Html::header(__('Setup'), filter_input(INPUT_SERVER, "PHP_SELF"), "config", "plugins");
+      if (!isCommandLine()) {
+         Html::header(__('Setup'), filter_input(INPUT_SERVER, "PHP_SELF"), "config", "plugins");
+      }
       $migrationname = 'Migration';
    } else {
       $migrationname = 'CliMigration';
    }
 
-   require_once (GLPI_ROOT . "/plugins/fusioninventory/install/update.php");
+   require_once (PLUGIN_FUSIONINVENTORY_DIR . "/install/update.php");
    $version_detected = pluginFusioninventoryGetCurrentVersion();
 
    if (!defined('FORCE_INSTALL')
@@ -847,7 +846,7 @@ function plugin_fusioninventory_install() {
       //       pass in upgrade to be sure all OK
       pluginFusioninventoryUpdate($version_detected, $migrationname);
    } else {
-      require_once (GLPI_ROOT . "/plugins/fusioninventory/install/install.php");
+      require_once (PLUGIN_FUSIONINVENTORY_DIR . "/install/install.php");
       pluginFusioninventoryInstall(PLUGIN_FUSIONINVENTORY_VERSION, $migrationname);
    }
    return true;
@@ -860,9 +859,9 @@ function plugin_fusioninventory_install() {
  * @return boolean
  */
 function plugin_fusioninventory_uninstall() {
-   require_once(GLPI_ROOT . "/plugins/fusioninventory/inc/setup.class.php");
-   require_once(GLPI_ROOT . "/plugins/fusioninventory/inc/profile.class.php");
-   require_once(GLPI_ROOT . "/plugins/fusioninventory/inc/inventoryruleimport.class.php");
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . "/inc/setup.class.php");
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . "/inc/profile.class.php");
+   require_once(PLUGIN_FUSIONINVENTORY_DIR . "/inc/inventoryruleimport.class.php");
    return PluginFusioninventorySetup::uninstall();
 }
 
@@ -1487,7 +1486,7 @@ function plugin_fusioninventory_addOrderBy($type, $id, $order, $key = 0) {
  * @return string
  */
 function plugin_fusioninventory_addDefaultWhere($type) {
-   if ($type == 'PluginFusioninventoryTaskjob') {
+   if ($type == 'PluginFusioninventoryTaskjob' && !isAPI()) {
       return " ( select count(*) FROM `glpi_plugin_fusioninventory_taskjobstates`
          WHERE plugin_fusioninventory_taskjobs_id= `glpi_plugin_fusioninventory_taskjobs`.`id`
          AND `state`!='3' )";
@@ -2055,6 +2054,7 @@ function plugin_item_add_fusioninventory($parm) {
  * @return object
  */
 function plugin_item_purge_fusioninventory($parm) {
+   global $DB;
 
    switch (get_class($parm)) {
 
@@ -2197,10 +2197,48 @@ function plugin_item_purge_fusioninventory($parm) {
          );
          break;
 
-      case 'PluginFusioninventoryUnmanaged' :
+      case 'PluginFusioninventoryTimeslot';
+         $pfTimeslotEntry = new PluginFusioninventoryTimeslotEntry();
+         $dbentries = getAllDataFromTable(
+            'glpi_plugin_fusioninventory_timeslotentries', [
+               'WHERE'  => [
+                  'plugin_fusioninventory_timeslots_id' => $parm->fields['id']
+               ]
+            ]
+         );
+         foreach ($dbentries as $data) {
+            $pfTimeslotEntry->delete(['id' => $data['id']], true);
+         }
+         break;
+
+      case 'Entity':
          $DB->delete(
-            'glpi_plugin_fusinvsnmp_unmanageds', [
-               'plugin_fusioninventory_unmanageds_id' => $parm->fields['id']
+            'glpi_plugin_fusioninventory_entities', [
+               'entities_id' => $parm->fields['id']
+            ]
+         );
+         break;
+
+      case 'PluginFusioninventoryDeployPackage':
+         // Delete all linked items
+         $DB->delete(
+            'glpi_plugin_fusioninventory_deploypackages_entities', [
+               'plugin_fusioninventory_deploypackages_id' => $parm->fields['id']
+            ]
+         );
+         $DB->delete(
+            'glpi_plugin_fusioninventory_deploypackages_groups', [
+               'plugin_fusioninventory_deploypackages_id' => $parm->fields['id']
+            ]
+         );
+         $DB->delete(
+            'glpi_plugin_fusioninventory_deploypackages_profiles', [
+               'plugin_fusioninventory_deploypackages_id' => $parm->fields['id']
+            ]
+         );
+         $DB->delete(
+            'glpi_plugin_fusioninventory_deploypackages_users', [
+               'plugin_fusioninventory_deploypackages_id' => $parm->fields['id']
             ]
          );
          break;
@@ -2377,17 +2415,17 @@ function plugin_fusioninventory_postshowtab($params) {
   * @return void
   */
 function plugin_fusioninventory_preshowtab($params) {
+   global $CFG_GLPI;
+
    if (isset($params['item']) && is_object($params['item'])) {
       $item = $params['item'];
-      switch ($item->getType()) {
-         case 'Computer':
-            switch (Session::getActiveTab('Computer')) {
-               case 'Computer_SoftwareVersion$1':
-                  $license = new PluginFusioninventoryComputerLicenseInfo();
-                  $license->showForm($item->getID());
-                  break;
-            }
-            break;
+      if (in_array($item->getType(), $CFG_GLPI['software_types'])) {
+         switch (Session::getActiveTab($item->getType())) {
+            case 'Item_SoftwareVersion$1':
+               $license = new PluginFusioninventoryComputerLicenseInfo();
+               $license->showForm($item->getID());
+               break;
+         }
       }
    }
 }
@@ -2407,8 +2445,8 @@ function plugin_fusioninventory_dynamicReport($params) {
             $data = Search::prepareDatasForSearch($params["item_type"], $params);
             $data['itemtype'] = 'Computer';
             Search::constructSQL($data);
-            Search::constructDatas($data);
-            Search::displayDatas($data);
+            Search::constructData($data);
+            Search::displayData($data);
 
             return true;
          }

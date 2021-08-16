@@ -111,7 +111,7 @@ class PluginFusioninventoryInventoryComputerComputer extends PluginFusioninvento
 
       if ($a_computerextend['bios_manufacturers_id'] > 0) {
          echo '<tr class="tab_bg_1">';
-         echo '<td>'.__('Manufacturer').'&nbsp;:</td>';
+         echo '<td>'.Manufacturer::getTypeName(1).'&nbsp;:</td>';
          echo '<td>';
          echo Dropdown::getDropdownName("glpi_manufacturers",
                                         $a_computerextend['bios_manufacturers_id']);
@@ -121,8 +121,8 @@ class PluginFusioninventoryInventoryComputerComputer extends PluginFusioninvento
 
       if ($a_computerextend['operatingsystem_installationdate'] != '') {
          echo '<tr class="tab_bg_1">';
-         echo "<td>".__('Operating system')." - ".__('Installation')." (".
-                 strtolower(__('Date')).")</td>";
+         echo "<td>".OperatingSystem::getTypeName(1)." - ".__('Installation')." (".
+                 strtolower(_n('Date', 'Dates', 1)).")</td>";
          echo '<td>'.Html::convDate($a_computerextend['operatingsystem_installationdate']).'</td>';
          echo '</tr>';
       }
@@ -230,7 +230,7 @@ class PluginFusioninventoryInventoryComputerComputer extends PluginFusioninvento
     * @return true
     */
    static function showComputerInfo($item) {
-      global $CFG_GLPI;
+      $fi_path = Plugin::getWebDir('fusioninventory');
 
       // Manage locks pictures
       PluginFusioninventoryLock::showLockIcon('Computer');
@@ -277,11 +277,11 @@ class PluginFusioninventoryInventoryComputerComputer extends PluginFusioninvento
          } else {
             if ($a_computerextend['is_entitylocked'] == 1) {
                echo __('No, locked manually', 'fusioninventory');
-               echo " [ <a href='".$CFG_GLPI['root_doc']."/plugins/fusioninventory/front/computerentitylock.form.php?id=".
+               echo " [ <a href='".$fi_path."/front/computerentitylock.form.php?id=".
                      $a_computerextend['id']."&lock=0'>".__('Unlock it', 'fusioninventory')."</a> ]";
             } else {
                echo __('Yes');
-               echo " [ <a href='".$CFG_GLPI['root_doc']."/plugins/fusioninventory/front/computerentitylock.form.php?id=".
+               echo " [ <a href='".$fi_path."/front/computerentitylock.form.php?id=".
                      $a_computerextend['id']."&lock=1'>".__('Lock it', 'fusioninventory')."</a> ]";
             }
          }
@@ -331,6 +331,4 @@ class PluginFusioninventoryInventoryComputerComputer extends PluginFusioninvento
       }
       return $a_computerextend['is_entitylocked'];
    }
-
-
 }

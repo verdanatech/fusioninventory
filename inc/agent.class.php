@@ -99,13 +99,14 @@ class PluginFusioninventoryAgent extends CommonDBTM {
          'field'     => 'name',
          'name'      => __('Name'),
          'datatype'  => 'itemlink',
+         'autocomplete' => true,
       ];
 
       $tab[] = [
          'id'       => '2',
          'table'    => 'glpi_entities',
          'field'    => 'completename',
-         'name'     => __('Entity'),
+         'name'     => Entity::getTypeName(1),
          'datatype' => 'dropdown',
       ];
 
@@ -156,7 +157,7 @@ class PluginFusioninventoryAgent extends CommonDBTM {
          'id'            => '8',
          'table'         => $this->getTable(),
          'field'         => 'version',
-         'name'          => __('Version'),
+         'name'          => _n('Version', 'Versions', 1),
          'datatype'      => 'text',
          'massiveaction' => false,
       ];
@@ -434,7 +435,7 @@ class PluginFusioninventoryAgent extends CommonDBTM {
          echo Html::hidden('computers_id',
                            ['value' => $this->fields["computers_id"]]);
          echo "&nbsp;<a class='pointer' onclick='submitGetLink(\"".
-               $CFG_GLPI['root_doc']."/plugins/fusioninventory/front/agent.form.php\", ".
+               Plugin::getWebDir('fusioninventory')."/front/agent.form.php\", ".
                "{\"disconnect\": \"disconnect\",
                  \"computers_id\": ".$this->fields['computers_id'].",
                  \"id\": ".$this->fields['id'].",
@@ -456,7 +457,7 @@ class PluginFusioninventoryAgent extends CommonDBTM {
       echo "<td align='center'>";
       Dropdown::showYesNo('lock', $this->fields["lock"]);
       echo "</td>";
-      echo "<td>".__('Version')."&nbsp:</td>";
+      echo "<td>"._n('Version', 'Versions', 1)."&nbsp:</td>";
       echo "<td align='center'>";
       $a_versions = importArrayFromDB($this->fields["version"]);
       foreach ($a_versions as $module => $version) {
@@ -788,7 +789,7 @@ class PluginFusioninventoryAgent extends CommonDBTM {
       }
 
       $agent_id = $this->fields['id'];
-      $fi_path = $CFG_GLPI['root_doc']."/plugins/fusioninventory";
+      $fi_path = Plugin::getWebDir('fusioninventory');
 
       echo "<tr class='tab_bg_1'>";
       echo "<td>";
@@ -1005,7 +1006,7 @@ class PluginFusioninventoryAgent extends CommonDBTM {
     * @return array|false agent information if found, otherwise false
     */
    static function getByDeviceID($device_id) {
-      $agents = getAllDatasFromTable(
+      $agents = getAllDataFromTable(
          'glpi_plugin_fusioninventory_agents',
          [
             'device_id' => $device_id,
@@ -1041,9 +1042,10 @@ class PluginFusioninventoryAgent extends CommonDBTM {
             array_push($url_addresses, "http://".$computer->fields["name"].
                ":".$port);
 
-            $domain = new Domain();
-            if ($computer->fields['domains_id'] != 0) {
-               $domain->getFromDB($computer->fields['domains_id']);
+            $ditem = new Domain_Item();
+            if ($ditem->getFromDBByCrit(['itemtype' => 'Computer', 'items_id' => $computer->fields['id']])) {
+               $domain = new Domain();
+               $domain->getFromDB($ditem->fields['domains_id']);
                array_push($url_addresses, "http://".
                   $computer->fields["name"].'.'.
                   $domain->fields["name"].

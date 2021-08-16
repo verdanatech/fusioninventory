@@ -52,8 +52,7 @@ if (!defined('GLPI_ROOT')) {
 /**
  * Manage the registry keys found by the collect module of agent.
  */
-class PluginFusioninventoryCollect_Registry_Content
-   extends PluginFusioninventoryCollectContentCommon {
+class PluginFusioninventoryCollect_Registry_Content extends PluginFusioninventoryCollectContentCommon {
 
    public $collect_itemtype = 'PluginFusioninventoryCollect_Registry';
    public $collect_table    = 'glpi_plugin_fusioninventory_collects_registries';
@@ -69,11 +68,11 @@ class PluginFusioninventoryCollect_Registry_Content
     */
    function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
 
-      if ($item->getID() > 0) {
+      if ($item->fields['id'] > 0) {
          if (get_class($item) == 'PluginFusioninventoryCollect') {
             if ($item->fields['type'] == 'registry') {
-               $a_colregs = getAllDatasFromTable('glpi_plugin_fusioninventory_collects_registries',
-                                                 ['plugin_fusioninventory_collects_id' => $item->getID()]);
+               $a_colregs = getAllDataFromTable('glpi_plugin_fusioninventory_collects_registries',
+                                                 ['plugin_fusioninventory_collects_id' => $item->fields['id']]);
                if (count($a_colregs) == 0) {
                   return '';
                }
@@ -108,7 +107,7 @@ class PluginFusioninventoryCollect_Registry_Content
                   AND `plugin_fusioninventory_collects_registries_id` =
                   '".$collects_registries_id."'";
       $result = $DB->query($query);
-      while ($data = $DB->fetch_assoc($result)) {
+      while ($data = $DB->fetchAssoc($result)) {
          $idtmp = $data['id'];
          unset($data['id']);
          $data1 = Toolbox::addslashes_deep($data);

@@ -97,7 +97,7 @@ class PluginFusioninventoryDeployTaskjob extends CommonDBTM {
       $res  = $DB->query($sql);
       $json  = [];
       $temp_tasks = [];
-      while ($row = $DB->fetch_assoc($res)) {
+      while ($row = $DB->fetchAssoc($res)) {
          $row['packages'] = importArrayFromDB($row['definition']);
          $row['actions'] = importArrayFromDB($row['action']);
 
@@ -188,7 +188,7 @@ class PluginFusioninventoryDeployTaskjob extends CommonDBTM {
          $stmt->bind_param(
             'ssssssssssss',
             $tasks_id,
-            "job_$tasks_id_$i",
+            "job_".$tasks_id."_".$i,
             'NOW()',
             '0',
             $plugins_id,
@@ -264,7 +264,7 @@ class PluginFusioninventoryDeployTaskjob extends CommonDBTM {
                   $query .= " ORDER BY name ASC";
                   $query_res = $DB->query($query);
                   $i = 0;
-                  while ($row = $DB->fetch_array($query_res)) {
+                  while ($row = $DB->fetchArray($query_res)) {
                      $res['action_selections'][$i]['id'] = $row['id'];
                      $res['action_selections'][$i]['name'] = $row['name'];
                      $i++;

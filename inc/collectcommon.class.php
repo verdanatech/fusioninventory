@@ -82,7 +82,7 @@ class PluginFusioninventoryCollectCommon extends CommonDBTM {
     * @return string name of the tab
     */
    function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
-      if ($item->getID() > 0) {
+      if ($item->fields['id'] > 0) {
          if ($item->fields['type'] == $this->type) {
             return __('Collect configuration');
          }
@@ -102,8 +102,8 @@ class PluginFusioninventoryCollectCommon extends CommonDBTM {
    static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
       $class     = get_called_class();
       $pfCollect = new $class();
-      $pfCollect->showList($item->getID());
-      $pfCollect->showForm($item->getID());
+      $pfCollect->showList($item->fields['id']);
+      $pfCollect->showForm($item->fields['id']);
       return true;
    }
 
@@ -211,5 +211,26 @@ class PluginFusioninventoryCollectCommon extends CommonDBTM {
       $this->showFormButtons($options);
 
       return true;
+   }
+
+   function rawSearchOptions() {
+
+      $tab = [];
+
+      $tab[] = [
+         'id'           => 'common',
+         'name'         => __('Characteristics')
+      ];
+
+      $tab[] = [
+         'id'           => '1',
+         'table'        => $this->getTable(),
+         'field'        => 'name',
+         'name'         => __('Name'),
+         'datatype'     => 'itemlink',
+         'autocomplete' => true,
+      ];
+
+      return $tab;
    }
 }

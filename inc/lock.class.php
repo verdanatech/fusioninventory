@@ -83,7 +83,7 @@ class PluginFusioninventoryLock extends CommonDBTM{
       $pfLock = new self();
       $a_data = current($pfLock->find(
             ['tablename' => $item->getTable(),
-             'items_id'  => $item->getID()],
+             'items_id'  => $item->fields['id']],
             [], 1));
       if (!is_array($a_data) || count($a_data) == 0) {
          return 0;
@@ -101,15 +101,12 @@ class PluginFusioninventoryLock extends CommonDBTM{
     */
    function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
 
-      $items_id = $item->getID();
+      $items_id = $item->fields['id'];
       $itemtype = $item->getType();
 
       switch ($itemtype) {
          case 'PluginFusioninventoryConfig':
             return PluginFusioninventoryLock::getTypeName(2);
-
-         case 'Computer':
-            return '';
 
          case 'NetworkEquipment':
             $itemtype = 'networking';
@@ -163,13 +160,13 @@ class PluginFusioninventoryLock extends CommonDBTM{
          echo "</table>";
          return true;
       }
-      if ($item->getID() < 1) {
+      if ($item->fields['id'] < 1) {
          $pflock->showForm(Toolbox::getItemTypeFormURL('PluginFusioninventoryLock'),
                            $item->getType());
       } else {
          $pflock->showForm(Toolbox::getItemTypeFormURL('PluginFusioninventoryLock').'?id='.
-                              $item->getID(),
-                           $item->getType(), $item->getID());
+                              $item->fields['id'],
+                           $item->getType(), $item->fields['id']);
       }
       return true;
    }
@@ -498,7 +495,7 @@ class PluginFusioninventoryLock extends CommonDBTM{
                 WHERE `tablename`='".$p_table."'
                       AND `tablefields` LIKE '%".$p_fieldToDel."%';";
       $result = $DB->query($query);
-      while ($data=$DB->fetch_array($result)) {
+      while ($data=$DB->fetchArray($result)) {
          // TODO improve the lock deletion by transmiting the old locked fields to the
          // deletion function
          PluginFusioninventoryLock::deleteInLockArray($p_table, $data['items_id'], $p_fieldToDel);
@@ -514,7 +511,7 @@ class PluginFusioninventoryLock extends CommonDBTM{
     * @global object $DB
     * @param string $p_itemtype Table id.
     * @param integer $p_items_id Line id.
-    * @param string $p_fieldsToLock Array of fields to lock.
+    * @param array $p_fieldsToLock Array of fields to lock.
     * @param string $massiveaction
     *
     * @return boolean
@@ -579,7 +576,7 @@ class PluginFusioninventoryLock extends CommonDBTM{
     * @global object $DB
     * @param string $p_itemtype Table id.
     * @param integer $p_items_id Line id.
-    * @param string $p_fieldsToLock Array of fields to lock.
+    * @param array $p_fieldsToLock Array of fields to lock.
     */
    static function addLocks($p_itemtype, $p_items_id, $p_fieldsToLock) {
       global $DB;
@@ -592,7 +589,7 @@ class PluginFusioninventoryLock extends CommonDBTM{
 
       $result = PluginFusioninventoryLock::getLock($tableName, $p_items_id);
       if ($DB->numrows($result)) {
-         $row = $DB->fetch_assoc($result);
+         $row = $DB->fetchAssoc($result);
          $lockedFields = importArrayFromDB($row['tablefields']);
          if (count(array_diff($p_fieldsToLock, $lockedFields))) { // old locks --> new locks
             $p_fieldsToLock = array_merge($p_fieldsToLock, $lockedFields);
@@ -649,15 +646,23 @@ class PluginFusioninventoryLock extends CommonDBTM{
    static function getLockFields($p_table, $p_items_id) {
       global $DB;
 
-      $db_lock = $DB->fetch_assoc(PluginFusioninventoryLock::getLock($p_table, $p_items_id));
-      $lock_fields = $db_lock["tablefields"];
-      $lock = importArrayFromDB($lock_fields);
-      if ($p_items_id != 0) {
-         $db_lock = $DB->fetch_assoc(PluginFusioninventoryLock::getLock($p_table, 0));
+      $db_lock = $DB->fetchAssoc(PluginFusioninventoryLock::getLock($p_table, $p_items_id));
+      if ($db_lock !== null) {
          $lock_fields = $db_lock["tablefields"];
-         $lockItemtype = importArrayFromDB($lock_fields);
-         $lock = array_merge($lock, $lockItemtype);
+         $lock = importArrayFromDB($lock_fields);
+      } else {
+         $lock = [];
       }
+
+      if ($p_items_id != 0) {
+         $db_lock = $DB->fetchAssoc(PluginFusioninventoryLock::getLock($p_table, 0));
+         if ($db_lock !== null) {
+            $lock_fields = $db_lock["tablefields"];
+            $lockItemtype = importArrayFromDB($lock_fields);
+            $lock = array_merge($lock, $lockItemtype);
+         }
+      }
+
       return $lock;
    }
 
@@ -708,6 +713,8 @@ class PluginFusioninventoryLock extends CommonDBTM{
     * @param object $item
     */
    static function deleteLock($item) {
+      global $DB;
+
       if ($item->fields['items_id'] == 0) {
          return;
       }
@@ -730,6 +737,10 @@ class PluginFusioninventoryLock extends CommonDBTM{
             }
          }
       }
+
+      // load general lock configuration
+      $generalLocks = PluginFusioninventoryLock::getLockFields($item->fields['tablename'], 0);
+      $a_fieldList = array_unique(array_merge($a_fieldList, $generalLocks));
 
       //delete all lock case (no more lock)
       if (!isset($item->updates)) {
@@ -768,7 +779,7 @@ class PluginFusioninventoryLock extends CommonDBTM{
       if ($DB->tableExists('glpi_ocslinks')) {
          $sql = "SELECT * FROM `glpi_ocslinks`";
          $result=$DB->query($sql);
-         while ($data=$DB->fetch_array($result)) {
+         while ($data=$DB->fetchArray($result)) {
             $a_ocslocks = importArrayFromDB($data['computer_update']);
             $a_fields = [];
             foreach ($a_ocslocks as $field) {
@@ -860,7 +871,7 @@ class PluginFusioninventoryLock extends CommonDBTM{
          $pfLock = new self();
          $a_locks = $pfLock->getLockFields(getTableForItemType($itemtype), $_GET['id']);
          foreach ($a_locks as $field) {
-            $js = '$("input[name='.$field.']").closest("td").prev().toggleClass("lockfield", true);';
+            $js = '$("[name='.$field.']").closest("td").prev().toggleClass("lockfield", true);';
             echo Html::scriptBlock($js);
          }
       }
@@ -958,7 +969,4 @@ class PluginFusioninventoryLock extends CommonDBTM{
       }
       return true;
    }
-
-
 }
-

@@ -152,7 +152,7 @@ class PluginFusioninventoryPrinterLog extends CommonDBTM {
          'table'     => 'glpi_manufacturers',
          'field'     => 'name',
          'linkfield' => 'manufacturers_id',
-         'name'      => __('Manufacturer'),
+         'name'      => Manufacturer::getTypeName(1),
       ];
 
       $joinparams = [
@@ -331,7 +331,7 @@ class PluginFusioninventoryPrinterLog extends CommonDBTM {
       $result=$DB->query($query);
       if ($result) {
          $i = 0;
-         while ($data=$DB->fetch_assoc($result)) {
+         while ($data=$DB->fetchAssoc($result)) {
             $data['date'] = Html::convDateTime($data['date']);
             $datas["$i"] = $data;
             $i++;
@@ -358,7 +358,7 @@ class PluginFusioninventoryPrinterLog extends CommonDBTM {
                 WHERE `printers_id` = '".$printers_id."';";
       $result = $DB->query($query);
       if ($result) {
-         $fields = $DB->fetch_assoc($result);
+         $fields = $DB->fetchAssoc($result);
          if ($fields) {
             $output = [];
             $output['num_days'] =
@@ -388,7 +388,7 @@ class PluginFusioninventoryPrinterLog extends CommonDBTM {
       // display stats
       $stats = $this->stats($printers_id);
       if ($stats) {
-         $this->initForm($id, $options);
+         $this->initForm($printers_id, $options);
          $this->showFormHeader($options);
 
          echo "<tr class='tab_bg_1'>";
@@ -432,7 +432,7 @@ class PluginFusioninventoryPrinterLog extends CommonDBTM {
 
       echo "<tr class='tab_bg_1'>";
       echo "<th></th>";
-      echo "<th>".__('Date')." :</th>";
+      echo "<th>"._n('Date', 'Dates', 1)." :</th>";
       echo "<th>".__('Meter', 'fusioninventory')." :</th></tr>";
 
       for ($i=0; $i<$limit; $i++) {
@@ -554,7 +554,7 @@ class PluginFusioninventoryPrinterLog extends CommonDBTM {
 
       $where = " WHERE `printers_id` IN(".$printersIds.")";
       if ($begin!='' || $end!='') {
-         $where .= " AND " .getDateRequest("`date`", $begin, $end);
+         $where .= " AND " .self::getDateRequest("`date`", $begin, $end);
       }
       $group = '';
       switch ($timeUnit) {
@@ -573,7 +573,7 @@ class PluginFusioninventoryPrinterLog extends CommonDBTM {
       }
 
       echo "<form method='post' name='snmp_form' id='snmp_form' action='".
-              $CFG_GLPI['root_doc']."/plugins/fusioninventory/front/printer_info.form.php'>";
+              Plugin::getWebDir('fusioninventory')."/front/printer_info.form.php'>";
       echo "<table class='tab_cadre' cellpadding='5' width='950'>";
       $mapping = new PluginFusioninventoryMapping();
       $maps = $mapping->find(['itemtype' => 'Printer']);
@@ -719,7 +719,7 @@ class PluginFusioninventoryPrinterLog extends CommonDBTM {
                $pages = [];
                $data = [];
                $date = '';
-               while ($data = $DB->fetch_assoc($result)) {
+               while ($data = $DB->fetchAssoc($result)) {
                   switch ($timeUnit) {
 
                      case 'day':
@@ -832,6 +832,18 @@ class PluginFusioninventoryPrinterLog extends CommonDBTM {
 
    }
 
+   public static function getDateRequest($field, $begin, $end) {
+      $sql = '';
+      if (!empty($begin)) {
+         $sql .= " $field >= '$begin' ";
+      }
 
+      if (!empty($end)) {
+         if (!empty($sql)) {
+            $sql .= " AND ";
+         }
+         $sql .= " $field <= ADDDATE('$end' , INTERVAL 1 DAY) ";
+      }
+      return " (".$sql.") ";
+   }
 }
-
