@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -37,7 +37,7 @@
  *
  * @package   FusionInventory
  * @author    David Durieux
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -288,6 +288,7 @@ class PluginFusioninventoryInventoryNetworkEquipmentLib extends PluginFusioninve
       $pfNetworkPort     = new PluginFusioninventoryNetworkPort();
       $networkports_id   = 0;
       $pfArrayPortInfos  = [];
+      $portsUpdatedInDB  = [];
       foreach ($a_inventory['networkport'] as $a_port) {
 
          $ifType = $a_port['iftype'];
@@ -315,7 +316,10 @@ class PluginFusioninventoryInventoryNetworkEquipmentLib extends PluginFusioninve
                $a_port['id'] = $a_pfnetworkport_DB['id'];
                $a_port['lastup'] = date('Y-m-d H:i:s');
                $pfNetworkPort->update($a_port);
+               $portsUpdatedInDB[] = $networkports_id;
             } else {
+               $portsUpdatedInDB[] = $a_ports_DB['id'];
+
                // Update port
                $networkports_id = $a_ports_DB['id'];
                $a_port['id'] = $a_ports_DB['id'];
@@ -336,7 +340,6 @@ class PluginFusioninventoryInventoryNetworkEquipmentLib extends PluginFusioninve
                } else {
                   $a_port['networkports_id'] = $networkports_id;
                   $a_port['lastup'] = date('Y-m-d H:i:s');
-                  $pfNetworkPort->add($a_port);
                }
             }
 
@@ -360,7 +363,7 @@ class PluginFusioninventoryInventoryNetworkEquipmentLib extends PluginFusioninve
             // Aggegation
             if (isset($a_inventory['aggregate'])
                     && isset($a_inventory['aggregate'][$a_port['logical_number']])) {
-               $this->importPortAggregate($a_inventory['aggregate'][$a_port['logical_number']],
+               $portsUpdatedInDB[] = $this->importPortAggregate($a_inventory['aggregate'][$a_port['logical_number']],
                                           $networkports_id, $items_id);
             }
 
@@ -376,7 +379,22 @@ class PluginFusioninventoryInventoryNetworkEquipmentLib extends PluginFusioninve
             }
          }
       }
-
+      // delete ports not in the inventory
+      if (!empty($portsUpdatedInDB)) {
+         $a_ports_DB = $networkPort->find(
+            [
+               'itemtype'       => 'NetworkEquipment',
+               'items_id'       => $items_id,
+               'NOT'            => ['id' => $portsUpdatedInDB]
+            ]
+         );
+         foreach ($a_ports_DB as $port) {
+            if ($port['name'] != "generale"
+               && $port['instantiation_type'] != 'NetworkPortAggregate') {
+               $networkPort->delete($port);
+            }
+         }
+      }
    }
 
 
@@ -709,6 +727,7 @@ class PluginFusioninventoryInventoryNetworkEquipmentLib extends PluginFusioninve
       }
       $input['networkports_id_list'] = $a_ports_db_tmp;
       $networkPortAggregate->update($input);
+      return $input['id'];
    }
 
 

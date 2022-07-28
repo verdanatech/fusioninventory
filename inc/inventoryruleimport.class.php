@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -37,7 +37,7 @@
  *
  * @package   FusionInventory
  * @author    David Durieux
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -65,13 +65,6 @@ class PluginFusioninventoryInventoryRuleImport extends Rule {
    const LINK_RESULT_DENIED            = 0;
    const LINK_RESULT_CREATE            = 1;
    const LINK_RESULT_LINK              = 2;
-
-   /**
-    * Define the matching only available
-    *
-    * @var type
-    */
-   var $restrict_matching = Rule::AND_MATCHING;
 
    /**
     * Define the right name

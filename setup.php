@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -37,7 +37,7 @@
  *
  * @package   FusionInventory
  * @author    David Durieux
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -45,7 +45,7 @@
  *
  */
 
-define ("PLUGIN_FUSIONINVENTORY_VERSION", "9.5+3.0");
+define ("PLUGIN_FUSIONINVENTORY_VERSION", "9.5+4.2");
 // Minimal GLPI version, inclusive
 define('PLUGIN_FUSIONINVENTORY_GLPI_MIN_VERSION', '9.5');
 // Maximum GLPI version, exclusive
@@ -180,6 +180,9 @@ function plugin_init_fusioninventory() {
       $Plugin->registerClass('PluginFusioninventoryInventoryRuleEntity');
       $Plugin->registerClass('PluginFusioninventoryInventoryRuleEntityCollection',
               ['rulecollections_types'=>true]);
+      $Plugin->registerClass('PluginFusioninventoryInventoryRuleRemotework');
+      $Plugin->registerClass('PluginFusioninventoryInventoryRuleRemoteworkCollection',
+               ['rulecollections_types'=>true]);
       $Plugin->registerClass('PluginFusioninventoryRulematchedlog',
               ['addtabon' => ['Computer',
                               'Monitor',
@@ -218,6 +221,9 @@ function plugin_init_fusioninventory() {
       $Plugin->registerClass('PluginFusioninventoryDeployGroup_Dynamicdata',
               ['addtabon' => ['PluginFusioninventoryDeployGroup']]);
       $Plugin->registerClass('PluginFusioninventoryDeployPackage',
+              ['addtabon' => ['Computer']]);
+      // Crontasks
+      $Plugin->registerClass('PluginFusioninventoryCronTask',
               ['addtabon' => ['Computer']]);
 
       $CFG_GLPI['glpitablesitemtype']["PluginFusioninventoryPrinterLogReport"] =
@@ -362,14 +368,19 @@ function plugin_init_fusioninventory() {
          'Printer'                            => 'plugin_item_purge_fusioninventory',
          'PluginFusioninventoryTimeslot'      => 'plugin_item_purge_fusioninventory',
          'Entity'                             => 'plugin_item_purge_fusioninventory',
-         'PluginFusioninventoryDeployPackage' => 'plugin_item_purge_fusioninventory'
+         'PluginFusioninventoryDeployPackage' => 'plugin_item_purge_fusioninventory',
+         'Computer'                           => 'plugin_item_purge_fusioninventory'
       ];
       $PLUGIN_HOOKS['item_purge']['fusioninventory'] = $p;
 
       $PLUGIN_HOOKS['item_transfer']['fusioninventory'] = 'plugin_item_transfer_fusioninventory';
 
+      $PLUGIN_HOOKS["menu_toadd"]['fusioninventory']['assets'] = [];
       if (Session::haveRight('plugin_fusioninventory_unmanaged', READ)) {
-         $PLUGIN_HOOKS["menu_toadd"]['fusioninventory']['assets'] = 'PluginFusioninventoryUnmanaged';
+         $PLUGIN_HOOKS["menu_toadd"]['fusioninventory']['assets'][] = 'PluginFusioninventoryUnmanaged';
+      }
+      if (Session::haveRight('plugin_fusioninventory_crontask', READ)) {
+         $PLUGIN_HOOKS["menu_toadd"]['fusioninventory']['assets'][] = 'PluginFusioninventoryCronTask';
       }
       if (Session::haveRight('plugin_fusioninventory_menu', READ)) {
          $PLUGIN_HOOKS["menu_toadd"]['fusioninventory']['admin'] = 'PluginFusioninventoryMenu';

@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -37,7 +37,7 @@
  * @package   FusionInventory
  * @author    David Durieux
  * @author Alexandre Delaunay
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -475,6 +475,8 @@ class PluginFusioninventoryDeployPackage extends CommonDBTM {
     * @return true
     */
    function showForm($ID, $options = []) {
+      global $CFG_GLPI;
+
       $this->initForm($ID, $options);
       $this->showFormHeader($options);
       //Add redips_clone element before displaying tabs
@@ -500,6 +502,44 @@ class PluginFusioninventoryDeployPackage extends CommonDBTM {
       echo "</td>";
 
       echo "<td colspan='2'></td>";
+      echo "</tr>";
+
+      echo "<tr>";
+      echo "<td>";
+      echo __('Current icon', 'fusioninventory') . ' : ';
+      echo "</td>";
+      echo "<td colspan='3'>";
+      echo "<i class='" . $this->fields['style'] . " fa-" . $this->fields['icon'] . " fa-4x'>";
+      echo "</td>";
+      echo "</tr>";
+
+      echo "<tr>";
+      echo "<td style='width: 15%;'>";
+      echo __('Style', 'fusioninventory') . ' : ';
+      echo "</td>";
+      echo "<td style='width: 15%;'>";
+      $elements = [
+         Dropdown::EMPTY_VALUE => Dropdown::EMPTY_VALUE,
+         'fas' => __('Solid', 'fusioninventory'),
+         'fab' => __('Brands', 'fusioninventory')
+      ];
+      $options = [];
+      $rand = Dropdown::showFromArray('style', $elements, $options);
+
+      echo "</td>";
+      echo "<td style='width: 20%;'>";
+      echo __('Choose an icon for this Store service', 'fusioninventory') . ' :';
+      echo "</td>";
+      echo "<td style='width: 50%;'>";
+
+      $params = ['style' => '__VALUE__'];
+
+      Ajax::updateItemOnSelectEvent("dropdown_style$rand", "show_icons$rand",
+         $CFG_GLPI["root_doc"] . "/plugins/fusioninventory/ajax/dropdownIcon.php", $params);
+
+      echo "<div id='show_icons$rand'>&nbsp;</div>\n";
+
+      echo "</td>";
       echo "</tr>";
 
       $this->showFormButtons($options);
@@ -1437,7 +1477,7 @@ class PluginFusioninventoryDeployPackage extends CommonDBTM {
                               title='".__("refresh job", 'fusioninventory')."'
                               class='btn'
                               id='refresh_run_$taskjob_id'>
-                              <i class='fa fa-refresh fa-fx'></i></a>";
+                              <i class='fa fa-sync fa-fx'></i></a>";
 
                      echo "</div>"; // .buttons
 
@@ -1500,7 +1540,7 @@ class PluginFusioninventoryDeployPackage extends CommonDBTM {
                      $('#refresh_run_$taskjob_id i').click(function() {
                         var fa = $(this);
                         fa.addClass('fa-spin fa-spinner')
-                          .removeClass('fa-refresh');
+                          .removeClass('fa-sync');
                         $.ajax({
                            url: '".$url."/ajax/jobstates_logs.php',
                            data: {
@@ -1529,7 +1569,7 @@ class PluginFusioninventoryDeployPackage extends CommonDBTM {
                                  });
 
                                  var class_to_apply = '';
-                                 switch (data.logs[0]['log.state']) {
+                                 switch (data.logs[0]['log.state'] + '') {
                                     case '".PluginFusioninventoryTaskjoblog::TASK_RUNNING."':
                                        class_to_apply = 'agents_running';
                                        break;
@@ -1549,7 +1589,7 @@ class PluginFusioninventoryDeployPackage extends CommonDBTM {
                            complete: function() {
                               setTimeout(function() {
                                  fa.removeClass('fa-spin fa-spinner')
-                                   .addClass('fa-refresh');
+                                   .addClass('fa-sync');
                               }, 300);
                            }
                         });
@@ -1806,7 +1846,7 @@ class PluginFusioninventoryDeployPackage extends CommonDBTM {
 
          //Add the new task
          $input = [
-            'name'                    => '[deploy on demand] '.$this->fields['name'],
+            'name'                    => '[deploy on demand] '.Toolbox::addslashes_deep($this->fields['name']),
             'entities_id'             => $computer->fields['entities_id'],
             'reprepare_if_successful' => 0,
             'is_deploy_on_demand'     => 1,

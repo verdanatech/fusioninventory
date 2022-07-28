@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -37,7 +37,7 @@
  * @package   FusionInventory
  * @author    Alexandre Delaunay
  * @author    David Durieux
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -223,6 +223,14 @@ class PluginFusioninventoryDeployAction extends PluginFusioninventoryDeployPacka
                if ($key ==="exec") {
                   echo "<pre style='border-left:solid lightgrey 3px;margin-left: 5px;".
                           "padding-left:2px;white-space: pre-wrap;'>$value</pre>";
+               } else if ($key == 'logLineLimit') {
+                  if ($value == 0) {
+                     echo ' '.__('None');
+                  } else if ($value == -1) {
+                     echo ' '.__('All');
+                  } else {
+                     echo " $value ";
+                  }
                } else {
                   echo " $value ";
                }
@@ -440,7 +448,7 @@ class PluginFusioninventoryDeployAction extends PluginFusioninventoryDeployPacka
                      'max'   => 5000,
                      'step'  => 10,
                      'toadd' => [0 => __('None'), -1 => __('All')],
-                     'value' => (isset($config_data['logLineLimit']))?$config_data['logLineLimit']:10
+                     'value' => (isset($config_data['logLineLimit']))?$config_data['logLineLimit']:-1
                     ];
          Dropdown::showNumber('logLineLimit', $options);
          echo "&nbsp;<span class='red'><i>";

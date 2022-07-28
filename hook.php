@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -36,7 +36,7 @@
  *
  * @package   FusionInventory
  * @author    David Durieux
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -1929,7 +1929,8 @@ function plugin_pre_item_purge_fusioninventory($parm) {
             'PluginFusioninventoryComputerLicenseInfo',
             'PluginFusioninventoryCollect_File_Content',
             'PluginFusioninventoryCollect_Registry_Content',
-            'PluginFusioninventoryCollect_Wmi_Content'
+            'PluginFusioninventoryCollect_Wmi_Content',
+            'PluginFusioninventoryCronTask'
          ];
          foreach ($clean as $obj) {
             $obj::cleanComputer($items_id);
@@ -2177,6 +2178,11 @@ function plugin_item_purge_fusioninventory($parm) {
                ]
             );
          }
+         // Delete the XML file
+         PluginFusioninventoryToolbox::deleteXML(
+            $parm->fields['id'],
+            'NetworkEquipment'
+         );
          break;
 
       case "Printer":
@@ -2195,7 +2201,19 @@ function plugin_item_purge_fusioninventory($parm) {
                'printers_id' => $parm->fields['id']
             ]
          );
+         // Delete the XML
+         PluginFusioninventoryToolbox::deleteXML(
+            $parm->fields['id'],
+            'Printer'
+         );
          break;
+
+      case 'Computer':
+         // Delete the XML
+         PluginFusioninventoryToolbox::deleteXML(
+            $parm->fields['id'],
+            'Computer'
+         );
 
       case 'PluginFusioninventoryTimeslot';
          $pfTimeslotEntry = new PluginFusioninventoryTimeslotEntry();

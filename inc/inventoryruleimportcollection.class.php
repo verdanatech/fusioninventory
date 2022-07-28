@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -36,7 +36,7 @@
  *
  * @package   FusionInventory
  * @author    David Durieux
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -184,7 +184,8 @@ class PluginFusioninventoryInventoryRuleImportCollection extends RuleCollection 
    function getRuleClassName() {
 
       if (preg_match('/(.*)Collection/', get_class($this), $rule_class)) {
-         if (debug_backtrace()[1]['function'] == 'getRuleListCriteria') {
+         $debug_backtrace = debug_backtrace();
+         if (is_array($debug_backtrace) && isset($debug_backtrace[1]) && $debug_backtrace[1]['function'] == 'getRuleListCriteria') {
             $rule_class[1] = str_replace('\\', '\\\\\\', $rule_class[1]);
          }
          return $rule_class[1];

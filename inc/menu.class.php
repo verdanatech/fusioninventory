@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -36,7 +36,7 @@
  *
  * @package   FusionInventory
  * @author    David Durieux
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -121,6 +121,7 @@ class PluginFusioninventoryMenu extends CommonGLPI {
           'unmanaged'                  => 'PluginFusioninventoryUnmanaged',
           'inventoryruleimport'        => 'PluginFusioninventoryInventoryRuleImport',
           'inventoryruleentity'        => 'PluginFusioninventoryInventoryRuleEntity',
+          'inventoryruleremotework'    => 'PluginFusioninventoryInventoryRuleRemotework',
           'inventoryrulelocation'      => 'PluginFusioninventoryInventoryRuleLocation',
           'collectrule'                => 'PluginFusioninventoryCollectRule',
           'inventorycomputerblacklist' => 'PluginFusioninventoryInventoryComputerBlacklist',
@@ -228,15 +229,15 @@ class PluginFusioninventoryMenu extends CommonGLPI {
       if ($cronTask->fields['lastrun'] == ''
               OR strtotime($cronTask->fields['lastrun']) < strtotime("-3 day")) {
          $message = __('GLPI cron not running, see ', 'fusioninventory');
-         $message .= " <a href='http://fusioninventory.org/documentation/fi4g/cron.html' target='_blank'>".__('documentation', 'fusioninventory')."</a>";
+         $message .= " <a href='https://documentation.fusioninventory.org/%20FusionInventory_for_GLPI/%20%20Installation%20%26%20update/3.cron/' target='_blank'>".__('documentation', 'fusioninventory')."</a>";
          Html::displayTitle($CFG_GLPI['root_doc']."/pics/warning.png", $message, $message);
       }
 
       // Check if plugin right updated (because security problems)
       $fi_php_path = Plugin::getPhpDir('fusioninventory');
       if (file_exists($fi_php_path."/ajax/deploydropdown_operatingsystems.php")) {
-         $message = __('SECURITY PROBLEM, see `2.1 Update` section to update correctly the plugin on ', 'fusioninventory');
-         $message .= " <a href='http://fusioninventory.org/documentation/fi4g/installation.html' target='_blank'>".__('documentation', 'fusioninventory')."</a>";
+         $message = __('SECURITY PROBLEM, see `Update` page to update correctly the plugin on ', 'fusioninventory');
+         $message .= " <a href='https://documentation.fusioninventory.org/%20FusionInventory_for_GLPI/%20%20Installation%20%26%20update/2.update/' target='_blank'>".__('documentation', 'fusioninventory')."</a>";
          Html::displayTitle($CFG_GLPI['root_doc']."/pics/warning.png", $message, $message);
       }
 
@@ -326,43 +327,51 @@ class PluginFusioninventoryMenu extends CommonGLPI {
       $a_menu = [];
 
       if (Session::haveRight('plugin_fusioninventory_ruleimport', READ)) {
-         $a_menu[1]['name'] = __('Equipment import and link rules', 'fusioninventory');
+         $a_menu[1]['name'] = __('Remotework', 'fusioninventory');
          $a_menu[1]['pic']  = $fi_path."/pics/menu_rules.png";
          $a_menu[1]['link'] = Toolbox::getItemTypeSearchURL(
+                    'PluginFusioninventoryInventoryRuleRemotework'
+                 );
+      }
+
+      if (Session::haveRight('plugin_fusioninventory_ruleimport', READ)) {
+         $a_menu[2]['name'] = __('Equipment import and link rules', 'fusioninventory');
+         $a_menu[2]['pic']  = $fi_path."/pics/menu_rules.png";
+         $a_menu[2]['link'] = Toolbox::getItemTypeSearchURL(
                     'PluginFusioninventoryInventoryRuleImport'
                  );
       }
 
       if (Session::haveRight('plugin_fusioninventory_ignoredimportdevice', READ)) {
-         $a_menu[2]['name'] = __('Asset skipped during import', 'fusioninventory');
-         $a_menu[2]['pic']  = $fi_path."/pics/menu_rules.png";
-         $a_menu[2]['link'] = Toolbox::getItemTypeSearchURL(
+         $a_menu[3]['name'] = __('Asset skipped during import', 'fusioninventory');
+         $a_menu[3]['pic']  = $fi_path."/pics/menu_rules.png";
+         $a_menu[3]['link'] = Toolbox::getItemTypeSearchURL(
                     'PluginFusioninventoryIgnoredimportdevice'
                  );
       }
 
       if (Session::haveRight('plugin_fusioninventory_ruleentity', READ)) {
-         $a_menu[3]['name'] = __('Computer entity rules', 'fusioninventory');
-         $a_menu[3]['pic']  = $fi_path."/pics/menu_rules.png";
-         $a_menu[3]['link'] = $fi_path."/front/inventoryruleentity.php";
+         $a_menu[4]['name'] = __('Computer entity rules', 'fusioninventory');
+         $a_menu[4]['pic']  = $fi_path."/pics/menu_rules.png";
+         $a_menu[4]['link'] = $fi_path."/front/inventoryruleentity.php";
       }
 
       if (Session::haveRight('plugin_fusioninventory_rulelocation', READ)) {
-         $a_menu[4]['name'] = __('Location rules', 'fusioninventory');
-         $a_menu[4]['pic']  = $fi_path."/pics/menu_rules.png";
-         $a_menu[4]['link'] = $fi_path."/front/inventoryrulelocation.php";
+         $a_menu[5]['name'] = __('Location rules', 'fusioninventory');
+         $a_menu[5]['pic']  = $fi_path."/pics/menu_rules.png";
+         $a_menu[5]['link'] = $fi_path."/front/inventoryrulelocation.php";
       }
 
       if (Session::haveRight("plugin_fusioninventory_rulecollect", READ)) {
-         $a_menu[5]['name'] = __('Computer information rules', 'fusioninventory');
-         $a_menu[5]['pic']  = $fi_path."/pics/menu_rules.png";
-         $a_menu[5]['link'] = $fi_path."/front/collectrule.php";
+         $a_menu[6]['name'] = __('Computer information rules', 'fusioninventory');
+         $a_menu[6]['pic']  = $fi_path."/pics/menu_rules.png";
+         $a_menu[6]['link'] = $fi_path."/front/collectrule.php";
       }
 
       if (Session::haveRight('plugin_fusioninventory_blacklist', READ)) {
-         $a_menu[6]['name'] = _n('Blacklist', 'Blacklists', 1);
-         $a_menu[6]['pic']  = $fi_path."/pics/menu_blacklist.png";
-         $a_menu[6]['link'] = $fi_path."/front/inventorycomputerblacklist.php";
+         $a_menu[7]['name'] = _n('Blacklist', 'Blacklists', 1);
+         $a_menu[7]['pic']  = $fi_path."/pics/menu_blacklist.png";
+         $a_menu[7]['link'] = $fi_path."/front/inventorycomputerblacklist.php";
       }
 
       if (!empty($a_menu)) {

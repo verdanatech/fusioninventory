@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -36,7 +36,7 @@
  *
  * @package   FusionInventory
  * @author    David Durieux
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -272,7 +272,7 @@ class PluginFusioninventoryInventoryComputerInventory {
          $input['domains_id'] = $a_computerinventory['Computer']['domains_id'];
       }
 
-         $input['tag'] = $tagAgent;
+      $input['tag'] = $tagAgent;
 
       if ((isset($a_computerinventory['Computer']['name']))
                  AND ($a_computerinventory['Computer']['name'] != '')) {
@@ -327,7 +327,12 @@ class PluginFusioninventoryInventoryComputerInventory {
 
       //Add the location if needed (play rule locations engine)
       $output = [];
-      $output = PluginFusioninventoryToolbox::addLocation($input, $output);
+      $inputloc = $input;
+      if ((isset($a_computerinventory['Computer']['domains_id']))
+          AND (!empty($a_computerinventory['Computer']['domains_id']))) {
+          $inputloc['domain'] = $a_computerinventory['Computer']['domains_id'];
+      }
+      $output = PluginFusioninventoryToolbox::addLocation($inputloc, $output);
       if (isset($output['locations_id'])) {
          $_SESSION['plugin_fusioninventory_locations_id'] =
                $output['locations_id'];
@@ -535,6 +540,9 @@ class PluginFusioninventoryInventoryComputerInventory {
                'value' => $items_id
             ]
          );
+         // this will ignore error `Duplicate entry 'xxx' for key 'PRIMARY'`
+         $query = str_replace("INSERT INTO", "INSERT IGNORE INTO", $query);
+
          $CFG_GLPI["use_log_in_files"] = false;
          if (!$DB->query($query)) {
             $communication = new PluginFusioninventoryCommunication();

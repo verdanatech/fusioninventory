@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -36,7 +36,7 @@
  *
  * @package   FusionInventory
  * @author    David Durieux
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -852,6 +852,9 @@ class PluginFusioninventoryAgent extends CommonDBTM {
          };
 
          $(document)
+            .ready(function() {
+                refresh_status();
+            })
             .on('click', '#refresh_status', function() {
                refresh_status();
             })
@@ -859,14 +862,14 @@ class PluginFusioninventoryAgent extends CommonDBTM {
                force_inventory();
             });
       });");
+      echo "<span id='refresh_status'><i class='fas fa-sync'></i></span>";
       echo "<span id='agent_status'>".
            __("not yet requested, refresh?", 'fusioninventory').
            "</span>";
-      echo "<span id='refresh_status'><i class='fas fa-sync'></i></span>";
       echo "</td>";
 
       echo "<td colspan='2'>";
-      echo "<span id='force_inventory_button'>".
+      echo "<span id='force_inventory_button'><i class='fas fa-bolt'></i>".
            __('Force inventory', 'fusioninventory').
            "</span>";
       echo "</td>";
@@ -1225,8 +1228,8 @@ class PluginFusioninventoryAgent extends CommonDBTM {
          ]
       ]);
 
+      $cron_status = false;
       if (count($iterator)) {
-         $cron_status = false;
          $action = $pfConfig->getValue('agents_action');
          if ($action == PluginFusioninventoryConfig::ACTION_CLEAN) {
             //delete agents
@@ -1254,4 +1257,3 @@ class PluginFusioninventoryAgent extends CommonDBTM {
 
 
 }
-

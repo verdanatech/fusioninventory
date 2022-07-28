@@ -3,7 +3,7 @@
 /**
  * FusionInventory
  *
- * Copyright (C) 2010-2016 by the FusionInventory Development Team.
+ * Copyright (C) 2010-2022 by the FusionInventory Development Team.
  *
  * http://www.fusioninventory.org/
  * https://github.com/fusioninventory/fusioninventory-for-glpi
@@ -37,7 +37,7 @@
  *
  * @package   FusionInventory
  * @author    David Durieux
- * @copyright Copyright (c) 2010-2016 FusionInventory team
+ * @copyright Copyright (c) 2010-2022 FusionInventory team
  * @license   AGPL License 3.0 or (at your option) any later version
  *            http://www.gnu.org/licenses/agpl-3.0-standalone.html
  * @link      http://www.fusioninventory.org/
@@ -279,7 +279,8 @@ class PluginFusioninventoryFormatconvert {
          'printer'                 => [],
          'peripheral'              => [],
          'storage'                 => [],
-         'remote_mgmt'             => []
+         'remote_mgmt'             => [],
+         'crontasks'               => []
       ];
       $thisc = new self();
       $pfConfig = new PluginFusioninventoryConfig();
@@ -336,6 +337,7 @@ class PluginFusioninventoryFormatconvert {
             }
          }
       }
+
       $array_tmp['is_dynamic'] = 1;
 
       $a_inventory['Computer'] = $array_tmp;
@@ -673,6 +675,35 @@ class PluginFusioninventoryFormatconvert {
                   }
                }
                $a_inventory['batteries'][] = $a_battery;
+            }
+         }
+      }
+
+       // * CRONTASKS
+       $a_inventory['crontasks'] = [];
+      if ($pfConfig->getValue('import_crontask') == 1) {
+         if (isset($array['CRONTASKS'])) {
+            foreach ($array['CRONTASKS'] as $a_crontasks) {
+                   $a_crontask = $thisc->addValues($a_crontasks,
+                       [
+                           'NAME'               => 'name',
+                           'DESCRIPTION'        => 'comment',
+                           'COMMAND'            => 'command',
+                           'CREATION_DATE'      => 'creation_date',
+                           'EXECUTION_YEAR'     => 'execution_year',
+                           'EXECUTION_MONTH'    => 'execution_month',
+                           'EXECUTION_DAY'      => 'execution_day',
+                           'EXECUTION_HOUR'     => 'execution_hour',
+                           'EXECUTION_MINUTE'   => 'execution_minute',
+                           'EXECUTION_WEEKDAY'  => 'execution_weekday',
+                           'USER_EXECUTION'     => 'user_execution',
+                           'STORAGE'            => 'storage',
+                           'USER_STORAGE'       => 'user_storage',
+                           'STATUS'             => 'status',
+                       ]
+                   );
+
+                   $a_inventory['crontasks'][] = $a_crontask;
             }
          }
       }
@@ -1067,16 +1098,25 @@ class PluginFusioninventoryFormatconvert {
          foreach ($array['MONITORS'] as $a_monitors) {
             $array_tmp = $thisc->addValues($a_monitors,
                                            [
-                                              'CAPTION'      => 'name',
+                                              'CAPTION'      => 'monitormodels_id',
                                               'MANUFACTURER' => 'manufacturers_id',
                                               'SERIAL'       => 'serial',
                                               'DESCRIPTION'  => 'comment']);
             $array_tmp['is_dynamic'] = 1;
-            if (!isset($array_tmp['name'])) {
-               $array_tmp['name'] = '';
-            }
-            if ($array_tmp['name'] == ''
-                    && isset($array_tmp['comment'])) {
+            $array_tmp['name'] = '';
+            if ($array_tmp['name'] == '' && isset($array_tmp['monitormodels_id'])) {
+               if (isset($array_tmp['manufacturers_id'])) {
+                  preg_match('/\b\w+\b/i', $array_tmp['manufacturers_id'], $res_manufacture);
+                  preg_match('/\b\w+\b/i', $array_tmp['monitormodels_id'], $res_monitormodel);
+                  if (strcasecmp($res_manufacture[0], $res_monitormodel[0]) != 0) {
+                     $array_tmp['name'] = $res_manufacture[0] . " " . $array_tmp['monitormodels_id'];
+                  } else {
+                     $array_tmp['name'] = $array_tmp['monitormodels_id'];
+                  }
+               } else {
+                  $array_tmp['name'] = $array_tmp['monitormodels_id'];
+               }
+            } else if (isset($array_tmp['comment'])) {
                $array_tmp['name'] = $array_tmp['comment'];
             }
             if (isset($array_tmp['comment'])) {
